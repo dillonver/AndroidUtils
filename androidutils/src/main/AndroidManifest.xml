@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+        </intent>
+    </queries>
+
+
+    <application>
+
+        <provider
+            android:name="xyz.dcln.androidutils.utils.provider.AucFileProvider"
+            android:authorities="${applicationId}.androidutils.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/androidutils_provider_paths" />
+        </provider>
+
+
+    </application>
+
+</manifest>

@@ -1,0 +1,126 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/ivBg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/img_act_bg6" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingVertical="@dimen/dp_40">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvNetworkUtils"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_10"
+                android:background="@color/black"
+                android:gravity="center"
+                android:padding="@dimen/dp_10"
+                android:visibility="invisible"
+                android:text="NetworkUtils"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/tvDeviceUtils"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_10"
+                android:visibility="invisible"
+
+                android:background="@color/black"
+                android:gravity="center"
+                android:padding="@dimen/dp_10"
+                android:text="DeviceUtils"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/tvBarUtils"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_10"
+                android:visibility="invisible"
+
+                android:background="@color/black"
+                android:gravity="center"
+                android:padding="@dimen/dp_10"
+                android:text="BarUtils"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/tvClipboardUtils"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_10"
+                android:visibility="invisible"
+
+                android:background="@color/black"
+                android:gravity="center"
+                android:padding="@dimen/dp_10"
+                android:text="ClipboardUtils"
+                android:textColor="@color/white" />
+            <TextView
+                android:id="@+id/tvRegexUtils"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_10"
+                android:background="@color/black"
+                android:gravity="center"
+                android:padding="@dimen/dp_10"
+                android:visibility="invisible"
+
+                android:text="RegexUtils"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/tvKeyboardUtils"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_10"
+                android:background="@color/black"
+                android:gravity="center"
+                android:visibility="gone"
+                android:padding="@dimen/dp_10"
+                android:text="KeyboardUtils"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/tvWifiTransferUtils"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_10"
+                android:background="@color/black"
+                android:gravity="center"
+                android:padding="@dimen/dp_10"
+                android:text="WifiTransferUtils"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/tvPermissionUtils"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_10"
+                android:background="@color/black"
+                android:gravity="center"
+                android:padding="@dimen/dp_10"
+                android:text="PermissionUtils"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,176 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:orientation="vertical">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layReceive"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/etListenPort"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="10000~65535"
+            android:inputType="number"
+            android:padding="@dimen/dp_15"
+            android:textColor="@color/white"
+            android:textColorHint="@color/teal_700"
+            android:textIsSelectable="true"
+            app:layout_constraintEnd_toEndOf="@id/tvStartListen"
+            app:layout_constraintStart_toEndOf="@id/tvListenPort"
+            app:layout_constraintTop_toBottomOf="@id/tvMyIp" />
+
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvListenPort"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/dp_15"
+            android:text="监听端口:"
+            android:textColor="@color/white"
+            android:textIsSelectable="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvMyIp" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvMyIp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_15"
+            android:padding="@dimen/dp_15"
+            android:text="我的IP:"
+            android:textColor="@color/white"
+            android:textIsSelectable="true"
+            android:textSize="@dimen/text_16sp"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvStartListen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:padding="@dimen/dp_15"
+            android:text="开始监听"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvMyIp" />
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/scResult"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_300"
+            android:background="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvStartListen">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvResult"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_15"
+                android:padding="@dimen/dp_15"
+                android:text="我是消息："
+                android:textColor="@color/black" />
+
+        </androidx.core.widget.NestedScrollView>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/laySend"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layReceive">
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/etTargetIp"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/dp_50"
+            android:gravity="center_vertical"
+            android:hint="对方的IP"
+            android:textColor="@color/white"
+            android:textColorHint="@color/teal_700"
+            android:textIsSelectable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tvTargetIp"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/etTargetPort"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/dp_50"
+            android:gravity="center_vertical"
+            android:hint="对方的IP端口"
+            android:textColor="@color/white"
+            android:textColorHint="@color/teal_700"
+            android:textIsSelectable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tvTargetPort"
+            app:layout_constraintTop_toBottomOf="@id/tvTargetIp" />
+
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/etMsg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:hint="输入需要发送的内容"
+            android:padding="@dimen/dp_15"
+            android:textColor="@color/black"
+            app:layout_constraintTop_toBottomOf="@id/tvTargetPort" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvTargetIp"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/dp_50"
+            android:gravity="center_vertical"
+            android:text="目标IP："
+            android:textColor="@color/white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvTargetPort"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/dp_50"
+            android:gravity="center_vertical"
+            android:text="目标IP端口："
+            android:textColor="@color/white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTargetIp" />
+
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvSend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_15"
+            android:background="@color/white"
+            android:padding="@dimen/dp_15"
+            android:text="发送消息"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/etMsg" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
