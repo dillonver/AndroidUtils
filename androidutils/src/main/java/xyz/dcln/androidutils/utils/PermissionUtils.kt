@@ -61,7 +61,7 @@ object PermissionUtils {
         onGranted: (() -> Unit)? = null,
         onDenied: (() -> Unit)? = null,
         onDeniedPermanently: (() -> Unit)? = null,
-        launchSettingsOnDeniedPermanently: Boolean = true
+        launchSettingsOnDeniedPermanently: Boolean = false
     ) {
         PermissionBase.requestSinglePermission(
             this,
@@ -91,7 +91,7 @@ object PermissionUtils {
         onPartialGranted: ((List<String>) -> Unit)? = null,
         onPartialDenied: ((List<String>) -> Unit)? = null,
         onDeniedPermanently: ((List<String>) -> Unit)? = null,
-        launchSettingsOnDeniedPermanently: Boolean = true
+        launchSettingsOnDeniedPermanently: Boolean = false
     ) {
         PermissionBase.requestMultiPermissions(
             this,

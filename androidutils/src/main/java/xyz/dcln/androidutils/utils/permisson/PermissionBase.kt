@@ -117,7 +117,7 @@ object PermissionBase {
         onGranted: (() -> Unit)? = null,
         onDenied: (() -> Unit)? = null,
         onDeniedPermanently: (() -> Unit)? = null,
-        launchSettingsOnDeniedPermanently: Boolean = true
+        launchSettingsOnDeniedPermanently: Boolean = false
     ) {
         // Check if the permission has already been granted
         if (hasPermission(permission)) {
@@ -165,7 +165,7 @@ object PermissionBase {
         onPartialGranted: ((List<String>) -> Unit)? = null,
         onPartialDenied: ((List<String>) -> Unit)? = null,
         onDeniedPermanently: ((List<String>) -> Unit)? = null,
-        launchSettingsOnDeniedPermanently: Boolean = true
+        launchSettingsOnDeniedPermanently: Boolean = false
     ) {
         // Check if all permissions have already been granted
         if (hasPermissions(*permissions)) {
