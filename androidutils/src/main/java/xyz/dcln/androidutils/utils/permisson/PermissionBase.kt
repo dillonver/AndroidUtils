@@ -16,6 +16,7 @@ import xyz.dcln.androidutils.utils.ActivityUtils.toggleOrientationLock
 import xyz.dcln.androidutils.utils.AppUtils
 import xyz.dcln.androidutils.utils.AppUtils.isAppForeground
 import xyz.dcln.androidutils.utils.IntervalUtils
+import xyz.dcln.androidutils.utils.IntervalUtils.interval
 import xyz.dcln.androidutils.utils.LogUtils.logW
 import java.util.concurrent.TimeUnit
 
@@ -279,7 +280,7 @@ object PermissionBase {
             logW("autoReturnSeconds must be >= 30")
             return
         }
-        IntervalUtils.createInterval(
+        activity.interval(
             end = 0,
             period = 1,
             unit = TimeUnit.SECONDS,
@@ -311,7 +312,6 @@ object PermissionBase {
                     )
                 }
             }
-        ).life(activity.lifecycle).start()
+        )
     }
-
 }

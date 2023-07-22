@@ -21,24 +21,33 @@ import java.util.concurrent.TimeUnit
 
 object IntervalUtils {
 
-    fun createInterval(
+    //获取IntervalController，不启动
+    fun create(
         end: Long,
         period: Long,
         unit: TimeUnit,
         start: Long = 0,
         initialDelay: Long = 0,
-        onTick: (IntervalController, Long) -> Unit,
-        onFinish: ((Long) -> Unit)? = null
+        onTick: ((IntervalController, Long) -> Unit)? = null,
+        onFinish: ((Long) -> Unit)? = null,
     ): IntervalController {
-        return IntervalController(
-            end,
-            period,
-            unit,
-            start,
-            initialDelay,
-            onTick,
-            onFinish
-        )
+        return IntervalController(end, period, unit, start, initialDelay, onTick, onFinish)
+    }
+
+    //直接启动interval
+    fun interval(
+        end: Long,
+        period: Long,
+        unit: TimeUnit,
+        start: Long = 0,
+        initialDelay: Long = 0,
+        onTick: ((IntervalController, Long) -> Unit)? = null,
+        onFinish: ((Long) -> Unit)? = null,
+        lifecycleOwner: LifecycleOwner? = null
+    ) {
+        val interval = create(end, period, unit, start, initialDelay, onTick, onFinish)
+        if (lifecycleOwner != null) interval.life(lifecycleOwner)
+        interval.start()
     }
 
     class IntervalController(
@@ -47,7 +56,7 @@ object IntervalUtils {
         private val unit: TimeUnit,
         val start: Long,
         private val initialDelay: Long,
-        private val onTick: (IntervalController, Long) -> Unit,
+        private val onTick: ((IntervalController, Long) -> Unit)? = null,
         private val onFinish: ((Long) -> Unit)? = null
     ) : Serializable, Closeable {
         private var countTime = 0L
@@ -141,7 +150,7 @@ object IntervalUtils {
             scope?.launch {
                 ticker = ticker(unit.toMillis(period), delay, mode = TickerMode.FIXED_DELAY)
                 for (unit in ticker) {
-                    onTick.invoke(this@IntervalController, count)
+                    onTick?.invoke(this@IntervalController, count)
                     if (end != -1L && count == end) {
                         scope?.cancel()
                         state = IntervalStatus.STATE_IDLE
@@ -164,18 +173,9 @@ object IntervalUtils {
         unit: TimeUnit,
         start: Long = 0,
         initialDelay: Long = 0,
-        onTick: (IntervalController, Long) -> Unit,
+        onTick: ((IntervalController, Long) -> Unit)? = null,
         onFinish: ((Long) -> Unit)? = null
-    ): IntervalController {
-        return createInterval(
-            end,
-            period,
-            unit,
-            start,
-            initialDelay,
-            onTick,
-            onFinish
-        )
-            .life(this)
+    ) {
+        create(end, period, unit, start, initialDelay, onTick, onFinish).life(this).start()
     }
 }
