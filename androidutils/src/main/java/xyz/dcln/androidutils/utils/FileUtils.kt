@@ -257,7 +257,7 @@ object FileUtils {
      * @param file 文件对象
      * @return 文件的 MD5 值，如果计算失败则返回 null
      */
-    fun calculateFileMD5(file: File): String? {
+    fun calculateFileMD5(file: File): String {
         val digest = MessageDigest.getInstance("MD5")
         FileInputStream(file).use { inputStream ->
             val buffer = ByteArray(8192)
