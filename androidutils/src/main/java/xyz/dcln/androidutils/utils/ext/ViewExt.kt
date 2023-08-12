@@ -31,19 +31,7 @@ fun View.setThrottleClickListener(interval: Long = 500, action: View.() -> Unit)
     }
 }
 
-/**
- * 将字符串截断并设置到 TextView 控件中显示
- * @param text 要截断和设置到 TextView 的字符串
- * @param maxLength 最大长度限制
- * @param truncationMarker 截断标记，默认为 "..."
- */
-fun TextView.truncateAndSet(text: String?, maxLength: Int, truncationMarker: String = "...") {
-    if (!text.isNullOrEmpty()) {
-        val truncatedText =
-            if (text.length > maxLength) text.substring(0, maxLength) + truncationMarker else text
-        this.text = truncatedText
-    }
-}
+
 
 /**
  * 将 [View] 转换为 [Bitmap]
