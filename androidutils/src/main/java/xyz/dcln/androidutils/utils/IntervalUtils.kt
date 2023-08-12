@@ -258,8 +258,8 @@ object IntervalUtils {
         unit: TimeUnit,
         start: Long = 0,
         initialDelay: Long = 0,
-        onTick: ((IntervalController, Long) -> Unit)? = null,
-        onFinish: ((Long) -> Unit)? = null
+        onTick: ((interval:IntervalController, count:Long) -> Unit)? = null,
+        onFinish: ((count:Long) -> Unit)? = null
     ) {
         create(end, period, unit, start, initialDelay, onTick, onFinish).life(this).start()
     }
