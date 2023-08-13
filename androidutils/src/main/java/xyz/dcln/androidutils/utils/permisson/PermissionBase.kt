@@ -15,7 +15,6 @@ import xyz.dcln.androidutils.utils.ActivityUtils.isOrientationLocked
 import xyz.dcln.androidutils.utils.ActivityUtils.toggleOrientationLock
 import xyz.dcln.androidutils.utils.AppUtils
 import xyz.dcln.androidutils.utils.AppUtils.isAppForeground
-import xyz.dcln.androidutils.utils.IntervalUtils
 import xyz.dcln.androidutils.utils.IntervalUtils.interval
 import xyz.dcln.androidutils.utils.LogUtils.logW
 import java.util.concurrent.TimeUnit

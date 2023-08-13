@@ -29,7 +29,7 @@ object GsonUtils {
         try {
             gson.fromJson(json, T::class.java)
         } catch (e: JsonSyntaxException) {
-            logE(e)
+            logE(e.localizedMessage)
             null
         }
 
@@ -37,7 +37,7 @@ object GsonUtils {
         try {
             gson.fromJson(json, type)
         } catch (e: JsonSyntaxException) {
-            logE(e)
+            logE(e.localizedMessage)
             null
         }
 

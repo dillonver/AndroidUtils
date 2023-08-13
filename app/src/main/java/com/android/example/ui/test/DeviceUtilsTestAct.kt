@@ -1,17 +1,12 @@
 package com.android.example.ui.test
 
-import android.Manifest
-import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
 import com.android.example.base.BaseBindingActivity
 import com.android.example.databinding.ActivityTestBinding
 import xyz.dcln.androidutils.utils.DeviceUtils
 import xyz.dcln.androidutils.utils.GsonUtils
 import xyz.dcln.androidutils.utils.LogUtils
-import xyz.dcln.androidutils.utils.NetworkUtils
-import xyz.dcln.androidutils.utils.PermissionUtils.requestSinglePermission
 
 
 class DeviceUtilsTestAct : BaseBindingActivity<ActivityTestBinding>() {

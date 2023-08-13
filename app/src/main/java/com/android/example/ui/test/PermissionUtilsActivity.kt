@@ -1,16 +1,9 @@
 package com.android.example.ui.test
 
 import android.Manifest
-import android.media.AudioManager
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.android.example.base.BaseBindingActivity
 import com.android.example.databinding.ActivityPermissionSampleBinding
-import com.android.example.databinding.ActivityTestBinding
-import xyz.dcln.androidutils.utils.ActivityUtils.addLifecycleObserver
-import xyz.dcln.androidutils.utils.DownloadUtils
 import xyz.dcln.androidutils.utils.GsonUtils
-import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.LogUtils.logI
 import xyz.dcln.androidutils.utils.PermissionUtils.requestDrawOverlays
 import xyz.dcln.androidutils.utils.PermissionUtils.requestMultiPermissions
@@ -18,7 +11,6 @@ import xyz.dcln.androidutils.utils.PermissionUtils.requestNotifyPermission
 import xyz.dcln.androidutils.utils.PermissionUtils.requestPackageUsageStatsPermission
 import xyz.dcln.androidutils.utils.PermissionUtils.requestSinglePermission
 import xyz.dcln.androidutils.utils.ToastUtils.toastShort
-import xyz.dcln.androidutils.utils.VolumeUtils
 
 
 class PermissionUtilsActivity : BaseBindingActivity<ActivityPermissionSampleBinding>() {

@@ -1,13 +1,10 @@
 package com.android.example.ui.test
 
-import android.graphics.Color
 import android.os.Build
-import android.view.View
 import androidx.annotation.RequiresApi
 import com.android.example.base.BaseBindingActivity
 import com.android.example.databinding.ActivityTestBinding
 import xyz.dcln.androidutils.utils.BarUtils
-import xyz.dcln.androidutils.utils.ColorUtils
 import xyz.dcln.androidutils.utils.LogUtils
 
 

@@ -34,7 +34,7 @@
             android:name="com.android.example.ui.test.WifiTransferActivity"
             android:launchMode="singleTop" />
         <activity
-            android:name="com.android.example.ui.test.TestActivityB"
+            android:name="com.android.example.ui.test.CommonTestActivity"
             android:launchMode="singleTop" />
         <activity android:name="com.android.example.ui.test.NetworkUtilsTestAct" />
         <activity android:name="com.android.example.ui.test.DeviceUtilsTestAct" />

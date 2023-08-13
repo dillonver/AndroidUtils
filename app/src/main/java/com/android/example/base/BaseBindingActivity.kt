@@ -2,8 +2,6 @@ package com.android.example.base
 
 import android.os.Bundle
 import androidx.viewbinding.ViewBinding
-import xyz.dcln.androidutils.utils.ActivityUtils.addLifecycleObserver
-import xyz.dcln.androidutils.utils.LogUtils
 
 
 abstract class BaseBindingActivity<T : ViewBinding> : BaseActivity() {
