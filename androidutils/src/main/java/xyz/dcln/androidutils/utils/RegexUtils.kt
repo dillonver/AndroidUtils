@@ -103,4 +103,26 @@ object RegexUtils {
         val nonPositiveFloatRegex = Regex("^-\\d+(\\.\\d+)?\$")
         return text.matches(nonPositiveFloatRegex)
     }
+
+    // 匹配ASCII范围内的符号
+    fun isSymbol(input: String): Boolean {
+        return Regex("^[!@#$%^&*()_+\\-=\\[\\]{};':\",.<>?~]+$").matches(input)
+    }
+
+    //是否包含中文字符
+    fun containsChinese(input: String): Boolean {
+        return Regex("[\u4e00-\u9fa5]").containsMatchIn(input)
+    }
+
+    // 匹配0-9的数字
+    fun isDigit(input: String): Boolean {
+        return input.all { it.isDigit() }
+    }
+
+    // 匹配大小写字母
+    fun isLetter(input: String): Boolean {
+        return input.all { it.isLetter() }
+    }
+
+
 }
