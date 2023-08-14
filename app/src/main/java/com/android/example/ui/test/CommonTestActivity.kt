@@ -1,15 +1,14 @@
 package com.android.example.ui.test
 
-import android.view.inputmethod.EditorInfo
 import androidx.core.view.isVisible
 import com.android.example.R
 import com.android.example.base.BaseBindingActivity
 import com.android.example.databinding.ActivityTestBinding
-import xyz.dcln.androidutils.utils.ActivityUtils
 import xyz.dcln.androidutils.utils.ActivityUtils.addTopActivityChangeListener
 import xyz.dcln.androidutils.utils.AppUtils.addAppStateListener
+import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.LogUtils.logI
-import xyz.dcln.androidutils.utils.ToastUtils.toastShort
+import xyz.dcln.androidutils.utils.PathUtils
 
 
 class CommonTestActivity : BaseBindingActivity<ActivityTestBinding>() {
@@ -38,7 +37,7 @@ class CommonTestActivity : BaseBindingActivity<ActivityTestBinding>() {
         super.initListener()
 
         viewBinding.tvCancel.setOnClickListener {
-          //  viewBinding.etTest.allowAllInput()
+            //  viewBinding.etTest.allowAllInput()
             return@setOnClickListener
             finish()
 
@@ -46,6 +45,12 @@ class CommonTestActivity : BaseBindingActivity<ActivityTestBinding>() {
         viewBinding.tvTest3.apply {
             text = "限制数字"
             setOnClickListener {
+                LogUtils.i(
+                    PathUtils.getDataPath(),
+                    PathUtils.getExternalAppFilesPath(),
+                    PathUtils.getExternalAppCachePath(),
+                    PathUtils.getExternalAppPicturesPath()
+                )
                 viewBinding.etTest.text.clear()
 //                viewBinding.etTest.limitNumbers(
 //                    isMasked = false,

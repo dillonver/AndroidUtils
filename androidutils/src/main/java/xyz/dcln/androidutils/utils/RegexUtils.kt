@@ -7,122 +7,70 @@ package xyz.dcln.androidutils.utils
  * Date: 2023/7/9 4:05
  */
 object RegexUtils {
-    // 1. 验证邮箱
-    fun isValidEmail(email: String): Boolean {
-        val emailRegex = Regex("\\w+([-+.']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*")
-        return email.matches(emailRegex)
-    }
+    // 邮箱正则
+    private val EMAIL = Regex("\\w+([-+.']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*")
+    // URL正则
+    private val URL = Regex("^(https?|ftp)://[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}(:[0-9]+)?(/.*)?\$")
+    // 汉字正则
+    private val CHINESE_CHARS = Regex("[\\u4E00-\\u9FA5]+")
+    // yyyy-MM-dd日期格式正则
+    private val DATE = Regex("^\\d{4}-\\d{2}-\\d{2}\$")
+    // IP地址正则
+    private val IP = Regex("^((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\$")
+    // 双字节字符正则
+    private val DOUBLE_BYTE = Regex("[^\\x00-\\xff]+")
+    // 整数正则
+    private val INTEGER = Regex("^-?\\d+\$")
+    // 正整数正则
+    private val POSITIVE_INTEGER = Regex("^\\d+\$")
+    // 浮点数正则
+    private val FLOAT = Regex("^-?\\d+(\\.\\d+)?\$")
+    // 正浮点数正则
+    private val POSITIVE_FLOAT = Regex("^\\d+(\\.\\d+)?\$")
+    // 符号正则
+    private val SYMBOL = Regex("^[!@#$%^&*()_+\\-=\\[\\]{};':\",.<>?~]+$")
+    // 数字正则
+    private val DIGIT = Regex("^\\d+$")
+    // 字母正则
+    private val LETTER = Regex("^[a-zA-Z]+$")
 
-    // 2. 验证 URL
-    fun isValidUrl(url: String): Boolean {
-        val urlRegex = Regex("^(https?|ftp)://[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}(:[0-9]+)?(/.*)?\$")
-        return url.matches(urlRegex)
-    }
+    // 判断是否为合法的邮箱地址
+    fun isValidEmail(email: String) = EMAIL.matches(email)
 
-    // 3. 验证汉字
-    fun containsChineseCharacters(text: String): Boolean {
-        val chineseCharRegex = Regex("[\\u4E00-\\u9FA5]+")
-        return text.contains(chineseCharRegex)
-    }
+    // 判断是否为合法的URL
+    fun isValidUrl(url: String) = URL.matches(url)
 
-    // 4. 验证 yyyy-MM-dd 格式的日期校验
-    fun isValidDate(date: String): Boolean {
-        val dateRegex = Regex("^\\d{4}-\\d{2}-\\d{2}\$")
-        return date.matches(dateRegex)
-    }
+    // 判断是否包含汉字
+    fun containsChineseCharacters(text: String) = CHINESE_CHARS.containsMatchIn(text)
 
-    // 5. 验证 IP 地址
-    fun isValidIpAddress(ip: String): Boolean {
-        val ipRegex =
-            Regex("^((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\$")
-        return ip.matches(ipRegex)
-    }
+    // 判断是否为yyyy-MM-dd日期格式
+    fun isValidDate(date: String) = DATE.matches(date)
 
-    // 6. 验证双字节
-    fun hasDoubleByteCharacters(text: String): Boolean {
-        val doubleByteRegex = Regex("[^\\x00-\\xff]+")
-        return text.contains(doubleByteRegex)
-    }
+    // 判断是否为合法的IP地址
+    fun isValidIpAddress(ip: String) = IP.matches(ip)
 
-    // 7. 验证整数
-    fun isValidInteger(text: String): Boolean {
-        val integerRegex = Regex("^-?\\d+\$")
-        return text.matches(integerRegex)
-    }
+    // 判断是否包含双字节字符
+    fun hasDoubleByteCharacters(text: String) = DOUBLE_BYTE.containsMatchIn(text)
 
-    // 8. 验证正整数
-    fun isValidPositiveInteger(text: String): Boolean {
-        val positiveIntegerRegex = Regex("^\\d+\$")
-        return text.matches(positiveIntegerRegex)
-    }
+    // 判断是否为整数
+    fun isValidInteger(text: String) = INTEGER.matches(text)
 
-    // 9. 验证负整数
-    fun isValidNegativeInteger(text: String): Boolean {
-        val negativeIntegerRegex = Regex("^-\\d+\$")
-        return text.matches(negativeIntegerRegex)
-    }
+    // 判断是否为正整数
+    fun isValidPositiveInteger(text: String) = POSITIVE_INTEGER.matches(text)
 
-    // 10. 验证非负整数
-    fun isValidNonNegativeInteger(text: String): Boolean {
-        val nonNegativeIntegerRegex = Regex("^\\d+\$")
-        return text.matches(nonNegativeIntegerRegex)
-    }
+    // 判断是否为浮点数
+    fun isValidFloat(text: String) = FLOAT.matches(text)
 
-    // 11. 验证非正整数
-    fun isValidNonPositiveInteger(text: String): Boolean {
-        val nonPositiveIntegerRegex = Regex("^-\\d+\$")
-        return text.matches(nonPositiveIntegerRegex)
-    }
+    // 判断是否为正浮点数
+    fun isValidPositiveFloat(text: String) = POSITIVE_FLOAT.matches(text)
 
-    // 12. 验证浮点数
-    fun isValidFloat(text: String): Boolean {
-        val floatRegex = Regex("^-?\\d+(\\.\\d+)?\$")
-        return text.matches(floatRegex)
-    }
+    // 判断是否为符号
+    fun isSymbol(input: String) = SYMBOL.matches(input)
 
-    // 13. 验证正浮点数
-    fun isValidPositiveFloat(text: String): Boolean {
-        val positiveFloatRegex = Regex("^\\d+(\\.\\d+)?\$")
-        return text.matches(positiveFloatRegex)
-    }
+    // 判断是否全为数字
+    fun isDigit(input: String) = DIGIT.matches(input)
 
-    // 14. 验证负浮点数
-    fun isValidNegativeFloat(text: String): Boolean {
-        val negativeFloatRegex = Regex("^-\\d+(\\.\\d+)?\$")
-        return text.matches(negativeFloatRegex)
-    }
-
-    // 15. 验证非负浮点数
-    fun isValidNonNegativeFloat(text: String): Boolean {
-        val nonNegativeFloatRegex = Regex("^\\d+(\\.\\d+)?\$")
-        return text.matches(nonNegativeFloatRegex)
-    }
-
-    // 16. 验证非正浮点数
-    fun isValidNonPositiveFloat(text: String): Boolean {
-        val nonPositiveFloatRegex = Regex("^-\\d+(\\.\\d+)?\$")
-        return text.matches(nonPositiveFloatRegex)
-    }
-
-    // 匹配ASCII范围内的符号
-    fun isSymbol(input: String): Boolean {
-        return Regex("^[!@#$%^&*()_+\\-=\\[\\]{};':\",.<>?~]+$").matches(input)
-    }
-
-    //是否包含中文字符
-    fun containsChinese(input: String): Boolean {
-        return Regex("[\u4e00-\u9fa5]").containsMatchIn(input)
-    }
-
-    // 匹配0-9的数字
-    fun isDigit(input: String): Boolean {
-        return input.all { it.isDigit() }
-    }
-
-    // 匹配大小写字母
-    fun isLetter(input: String): Boolean {
-        return input.all { it.isLetter() }
-    }
-
-
+    // 判断是否全为字母
+    fun isLetter(input: String) = LETTER.matches(input)
 }
+

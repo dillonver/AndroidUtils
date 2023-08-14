@@ -28,7 +28,7 @@ object GsonUtils {
     inline fun <reified T> fromJson(json: String?): T? =
         try {
             gson.fromJson(json, T::class.java)
-        } catch (e: JsonSyntaxException) {
+        } catch (e: Exception) {
             logE(e.localizedMessage)
             null
         }
@@ -36,7 +36,7 @@ object GsonUtils {
     fun <T> fromJson(json: String?, type: Type?): T? =
         try {
             gson.fromJson(json, type)
-        } catch (e: JsonSyntaxException) {
+        } catch (e: Exception) {
             logE(e.localizedMessage)
             null
         }

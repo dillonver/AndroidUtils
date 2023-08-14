@@ -1,19 +1,5 @@
 package xyz.dcln.androidutils.utils.ext
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapShader
-import android.graphics.Canvas
-import android.graphics.Outline
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.shapes.RoundRectShape
-import android.os.Build
-import android.view.View
-import android.view.ViewOutlineProvider
-import android.widget.EditText
 import android.widget.TextView
 
 

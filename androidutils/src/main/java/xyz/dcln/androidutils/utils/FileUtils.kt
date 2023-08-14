@@ -35,33 +35,6 @@ object FileUtils {
         }
     }
 
-    /**
-     * 创建目录
-     * @param path 目录路径
-     * @return 操作是否成功
-     */
-    fun createDirectory(path: String): Boolean {
-        val directory = File(path)
-        return if (!directory.exists()) {
-            directory.mkdirs()
-        } else {
-            false
-        }
-    }
-
-    /**
-     * 删除目录
-     * @param path 目录路径
-     * @return 操作是否成功
-     */
-    fun deleteDirectory(path: String): Boolean {
-        val directory = File(path)
-        return if (directory.exists()) {
-            directory.deleteRecursively()
-        } else {
-            false
-        }
-    }
 
     /**
      * 读取文件内容
@@ -285,5 +258,65 @@ object FileUtils {
             sb.append(hex)
         }
         return sb.toString()
+    }
+
+    /**
+     * 创建目录 (Create a directory).
+     *
+     * @param path 目录路径 (Directory path).
+     * @param deleteIfExists 是否删除已经存在的目录再新建 (Whether to delete the existing directory before creating a new one).
+     * @return 操作是否成功 (Whether the operation was successful).
+     */
+    fun createDirectory(path: String, deleteIfExists: Boolean = false): Boolean {
+        val directory = File(path)
+
+        // If the directory already exists and the deleteIfExists flag is set to true
+        if (directory.exists() && deleteIfExists) {
+            // Try deleting the directory and its contents
+            val deletionSuccessful = directory.deleteRecursively()
+            // If deletion is successful, attempt to recreate the directory
+            if (deletionSuccessful) {
+                return directory.mkdirs()
+            }
+        } else if (!directory.exists()) {
+            // If the directory does not exist, attempt to create it
+            return directory.mkdirs()
+        }
+
+        // Return false if the function hasn't already returned at this point
+        return false
+    }
+
+    /**
+     * Deletes a directory located at the specified path.
+     *
+     * @param path The path of the directory to delete.
+     * @param onlyContents If true, only the contents of the directory will be deleted, leaving the directory itself intact.
+     *                     If false, the directory and all its contents will be deleted.
+     *
+     * @return True if the operation was successful, false otherwise.
+     */
+    fun deleteDirectory(path: String, onlyContents: Boolean = false): Boolean {
+        val directory = File(path)
+
+        if (directory.exists()) {
+            return if (onlyContents && directory.isDirectory) {
+                // Delete only the contents of the directory
+                directory.listFiles()?.forEach {
+                    if (it.isDirectory) {
+                        it.deleteRecursively() // Delete subdirectories and their contents
+                    } else {
+                        it.delete() // Delete individual files
+                    }
+                }
+                true
+            } else {
+                // Delete the directory and its contents
+                directory.deleteRecursively()
+            }
+        }
+
+        // Return false if the directory does not exist
+        return false
     }
 }

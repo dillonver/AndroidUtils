@@ -6,6 +6,8 @@ import com.android.example.base.BaseBindingActivity
 import com.android.example.databinding.ActivityTestBinding
 import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.RegexUtils
+import xyz.dcln.androidutils.utils.isDigit
+import xyz.dcln.androidutils.utils.isSymbol
 
 
 class RegexUtilsTestAct : BaseBindingActivity<ActivityTestBinding>() {
@@ -29,9 +31,9 @@ class RegexUtilsTestAct : BaseBindingActivity<ActivityTestBinding>() {
             LogUtils.i(RegexUtils.isValidEmail("1304947@qq.com"))
             LogUtils.i(RegexUtils.isValidInteger("1304947@qq.com"))
             LogUtils.i(RegexUtils.isValidInteger("6666"))
-            LogUtils.i(RegexUtils.isValidNegativeFloat("6666"))
-            LogUtils.i(RegexUtils.isValidNegativeFloat("-6666"))
-            LogUtils.i(RegexUtils.isValidNegativeFloat("-6666.8"))
+            LogUtils.i(RegexUtils.isDigit("6666"),"6666".isDigit())
+            LogUtils.i(RegexUtils.isSymbol("-;;"),"6666".isSymbol())
+            LogUtils.i(RegexUtils.isLetter("-6666.8"))
             LogUtils.i(RegexUtils.isValidPositiveFloat("6666.7"))
             LogUtils.i(RegexUtils.isValidPositiveFloat("-6666.8"))
 

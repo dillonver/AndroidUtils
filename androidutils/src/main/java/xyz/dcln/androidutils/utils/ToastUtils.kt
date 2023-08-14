@@ -16,14 +16,10 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.ColorInt
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.material.snackbar.Snackbar
 import xyz.dcln.androidutils.R
 import xyz.dcln.androidutils.utils.AppUtils.isAppForeground
+import xyz.dcln.androidutils.utils.CoroutineUtils.launchOnUI
 
 
 /**
@@ -54,7 +50,9 @@ object ToastUtils {
         var topPadding: Float = 5f,
         var bottomPadding: Float = 5f
     ) {
-        fun show(message: CharSequence) {
+        fun show(message: String?) {
+            if (message.isNullOrEmpty()) return  // Check if message is empty or null
+
             if (useCustomToast) {
                 toastInstance?.cancel()
             }
@@ -63,7 +61,7 @@ object ToastUtils {
             toastInstance = Toast(context).apply {
                 duration = toastDuration
                 //Starting from Android Build.VERSION_CODES.R, for apps targeting API level Build.VERSION_CODES.R or higher, this method is a no-op when called on text toasts.
-                if(Build.VERSION.SDK_INT< Build.VERSION_CODES.R){
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
                     setGravity(toastGravity, toastXOffset, toastYOffset)
                 }
                 view = textView
@@ -175,7 +173,7 @@ object ToastUtils {
         return ToastConfig(context).apply(block)
     }
 
-    fun showToast(context: Context, message: CharSequence, duration: Int) {
+    fun showToast(context: Context, message: String?, duration: Int) {
         makeToast(context) {
             toastDuration = duration
         }.show(message)
@@ -190,29 +188,40 @@ object ToastUtils {
         return SnackbarConfig(activity).apply(block)
     }
 
-    fun Any.toast(message: CharSequence, duration: Int) {
+    fun Any.toast(message: String?, duration: Int) {
+        if (message.isNullOrEmpty()) return  // Check if message is empty or null
+
         val topActivity = ActivityUtils.getTopActivity()
         if (ActivityUtils.isActivityValid(topActivity)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !AppUtils.isAppForeground()) {
-                makeSnackbar(topActivity ?: return) {
-                    this.duration = duration
-                }.show(message)
+                CoroutineUtils.launchOnUI {
+                    topActivity?.let {
+                        makeSnackbar(it) {
+                            this.duration = duration
+                        }.show(message)
+                    }
+                }
             } else {
-                showToast(topActivity ?: return, message, duration)
+                CoroutineUtils.launchOnUI {
+                    topActivity?.let { showToast(it, message, duration) }
+                }
             }
         }
-
     }
 
-    fun Any.toastShort(message: CharSequence) {
-        if(AppUtils.isAppForeground()) {
-            toast(message, Toast.LENGTH_SHORT)
+    fun Any.toastShort(message: String?) {
+        if (AppUtils.isAppForeground()) {
+            CoroutineUtils.launchOnUI {
+                toast(message, Toast.LENGTH_SHORT)
+            }
         }
     }
 
-    fun Any.toastLong(message: CharSequence) {
-        if(AppUtils.isAppForeground()) {
-            toast(message, Toast.LENGTH_LONG)
+    fun Any.toastLong(message: String?) {
+        if (AppUtils.isAppForeground()) {
+            CoroutineUtils.launchOnUI {
+                toast(message, Toast.LENGTH_LONG)
+            }
         }
     }
 

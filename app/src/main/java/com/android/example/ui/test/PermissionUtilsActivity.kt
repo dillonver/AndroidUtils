@@ -10,6 +10,7 @@ import xyz.dcln.androidutils.utils.PermissionUtils.requestMultiPermissions
 import xyz.dcln.androidutils.utils.PermissionUtils.requestNotifyPermission
 import xyz.dcln.androidutils.utils.PermissionUtils.requestPackageUsageStatsPermission
 import xyz.dcln.androidutils.utils.PermissionUtils.requestSinglePermission
+import xyz.dcln.androidutils.utils.ToastUtils.toastLong
 import xyz.dcln.androidutils.utils.ToastUtils.toastShort
 
 
@@ -24,7 +25,7 @@ class PermissionUtilsActivity : BaseBindingActivity<ActivityPermissionSampleBind
             requestNotifyPermission(
                 autoReturn = false,
                 onGranted = { toastShort("权限同意了") },
-                onDenied = { toastShort("权限拒绝了") })
+                onDenied = { toastLong("权限拒绝了") })
 
         }
         viewBinding.tvTest5.setOnClickListener {

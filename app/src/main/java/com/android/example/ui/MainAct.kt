@@ -11,6 +11,7 @@ import com.android.example.ui.test.DeviceUtilsTestAct
 import com.android.example.ui.test.KeyboardUtilsTestAct
 import com.android.example.ui.test.NetworkUtilsTestAct
 import com.android.example.ui.test.PermissionUtilsActivity
+import com.android.example.ui.test.RegexUtilsTestAct
 import com.android.example.ui.test.WifiTransferActivity
 import xyz.dcln.androidutils.utils.ActivityUtils
 
@@ -46,6 +47,11 @@ class MainAct : BaseBindingActivity<ActivityMainBinding>() {
         }
         viewBinding.tvKeyboardUtils.setOnClickListener {
             ActivityUtils.startActivity<KeyboardUtilsTestAct>()
+
+        }
+
+        viewBinding.tvRegexUtils.setOnClickListener {
+            ActivityUtils.startActivity<RegexUtilsTestAct>()
 
         }
         viewBinding.tvWifiTransferUtils.setOnClickListener {
