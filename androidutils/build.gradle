@@ -55,7 +55,7 @@ afterEvaluate {
             release(MavenPublication) {
                 groupId = 'xyz.dcln'
                 artifactId = 'androidutils'
-                version = '1.0.1'
+                version = '1.0.0'
                 from components.release
             }
         }
