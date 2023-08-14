@@ -6,8 +6,8 @@ import com.android.example.base.BaseBindingActivity
 import com.android.example.databinding.ActivityTestBinding
 import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.RegexUtils
-import xyz.dcln.androidutils.utils.isDigit
-import xyz.dcln.androidutils.utils.isSymbol
+import xyz.dcln.androidutils.utils.ext.isDigit
+import xyz.dcln.androidutils.utils.ext.isSymbol
 
 
 class RegexUtilsTestAct : BaseBindingActivity<ActivityTestBinding>() {
