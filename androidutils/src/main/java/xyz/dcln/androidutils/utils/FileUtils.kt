@@ -260,32 +260,40 @@ object FileUtils {
         return sb.toString()
     }
 
+
     /**
-     * 创建目录 (Create a directory).
+     * 在指定的文件路径创建新目录。
      *
-     * @param path 目录路径 (Directory path).
-     * @param deleteIfExists 是否删除已经存在的目录再新建 (Whether to delete the existing directory before creating a new one).
-     * @return 操作是否成功 (Whether the operation was successful).
+     * @param path 希望创建目录的文件路径。
+     * @param deleteIfExists 标志，指示当目录已经存在时是否删除该目录及其内容。
+     * @return 布尔值，指示目录是否成功创建或已存在（且未要求删除）；
+     *         如果目录无法按要求创建或删除，则返回 false。
      */
     fun createDirectory(path: String, deleteIfExists: Boolean = false): Boolean {
+        // 创建一个 File 对象，代表你想要创建的目录
         val directory = File(path)
 
-        // If the directory already exists and the deleteIfExists flag is set to true
+        // 如果目录已经存在，且 deleteIfExists 标志设置为 true
         if (directory.exists() && deleteIfExists) {
-            // Try deleting the directory and its contents
-            val deletionSuccessful = directory.deleteRecursively()
-            // If deletion is successful, attempt to recreate the directory
-            if (deletionSuccessful) {
-                return directory.mkdirs()
+            // 尝试删除目录及其内容
+            // 如果删除操作不成功，则返回 false
+            if (!directory.deleteRecursively()) {
+                return false
             }
-        } else if (!directory.exists()) {
-            // If the directory does not exist, attempt to create it
+        }
+
+        // 如果目录不存在（或刚被删除）
+        if (!directory.exists()) {
+            // 尝试创建目录（以及任何必要但不存在的父目录）
+            // 返回 mkdirs() 的结果，如果目录成功创建，则返回 true，否则返回 false
             return directory.mkdirs()
         }
 
-        // Return false if the function hasn't already returned at this point
-        return false
+        // 如果目录已经存在且 deleteIfExists 为 false，
+        // 或目录在删除后成功重新创建，则返回 true
+        return true
     }
+
 
     /**
      * Deletes a directory located at the specified path.
@@ -319,4 +327,35 @@ object FileUtils {
         // Return false if the directory does not exist
         return false
     }
+
+
+    /**
+     * 在指定的名字和路径下创建或获取输出目录。
+     *
+     * @param name 想要创建或获取的目录的名字。
+     * @param deleteIfExists 标志，指示当目录已经存在时是否删除该目录及其内容。
+     * @return 返回一个 File 对象，代表创建或已存在的目录；
+     *         如果目录无法按要求创建或删除，则返回 null。
+     */
+    fun simpleOutputDirectory(name: String, deleteIfExists: Boolean = false): File? {
+        // 获取合适的基本目录，可能是外部缓存目录或应用的文件目录
+        val baseDir = AppUtils.getApp().externalCacheDirs.firstOrNull()
+            ?: AppUtils.getApp().filesDir
+
+        // 构建目标目录的完整路径
+        val targetDirPath = File(baseDir, name).absolutePath
+
+        // 使用 createDirectory 函数来处理目录的创建（以及可能的删除）
+        val success = createDirectory(targetDirPath, deleteIfExists)
+
+        // 如果无法创建目录，则返回 null
+        if (!success) {
+            return null
+        }
+
+        // 返回一个 File 对象，代表创建的目录
+        return File(targetDirPath)
+    }
+
+
 }

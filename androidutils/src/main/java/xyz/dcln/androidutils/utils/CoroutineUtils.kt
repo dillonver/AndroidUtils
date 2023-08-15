@@ -4,94 +4,57 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 
 object CoroutineUtils {
-    private val uiScope = CoroutineScope(Dispatchers.Main + CoroutineName("UI"))
-    private val ioScope = CoroutineScope(Dispatchers.IO + CoroutineName("IO"))
 
-    // Launches a new coroutine with the given scope, delay, and block.
-    private fun launch(
-        scope: CoroutineScope,
+    /**
+     * Launches a new coroutine on the UI thread with an optional delay and returns a Job.
+     * @param delayMillis The delay in milliseconds before the coroutine starts (default: 0).
+     * @param block The coroutine code to be executed.
+     */
+    fun launchOnUI(
         delayMillis: Long = 0L,
         block: suspend CoroutineScope.() -> Unit
-    ) {
-        scope.launch {
+    ): Job {
+        val uiScope = CoroutineScope(Dispatchers.Main + CoroutineName("UI"))
+        return uiScope.launch {
             delay(delayMillis)
             block()
         }
     }
 
     /**
-     * Launches a new coroutine on the UI thread with an optional delay.
+     * Launches a new coroutine on the IO thread with an optional delay and returns a Job.
      * @param delayMillis The delay in milliseconds before the coroutine starts (default: 0).
      * @param block The coroutine code to be executed.
      */
-    fun Any.launchOnUI(delayMillis: Long = 0L, block: suspend CoroutineScope.() -> Unit) =
-        launch(uiScope, delayMillis, block)
-
-    /**
-     * Launches a new coroutine on the IO thread with an optional delay.
-     * @param delayMillis The delay in milliseconds before the coroutine starts (default: 0).
-     * @param block The coroutine code to be executed.
-     */
-    fun Any.launchOnIO(delayMillis: Long = 0L, block: suspend CoroutineScope.() -> Unit) =
-        launch(ioScope, delayMillis, block)
-
-    /**
-     * Cancels all coroutines launched by this object.
-     */
-    fun cancelAll() {
-        uiScope.coroutineContext.cancelChildren()
-        ioScope.coroutineContext.cancelChildren()
-    }
-
-    // Wraps a Flow into a coroutine with the given scope and action.
-    private fun <T> Flow<T>.onThread(scope: CoroutineScope, action: (T) -> Unit) {
-        scope.launch { collect { value -> action(value) } }
-    }
-
-    /**
-     * Wraps a Flow into a coroutine on the UI thread.
-     * @param action The action to be executed when the Flow emits a new value.
-     */
-    fun <T> Flow<T>.onUIThread(action: (T) -> Unit) = onThread(uiScope, action)
-
-    /**
-     * Wraps a Flow into a coroutine on the IO thread.
-     * @param action The action to be executed when the Flow emits a new value.
-     */
-    fun <T> Flow<T>.onIOThread(action: (T) -> Unit) = onThread(ioScope, action)
-
-    /**
-     * Cancels the observation of the given Flow.
-     * @param job The job returned by the onUIThread or onIOThread function.
-     */
-    fun cancelFlowObservation(job: Job) {
-        job.cancel()
-    }
-
-    // Runs a block of code with the given scope and suspends until it's done.
-    private suspend fun withContext(
-        scope: CoroutineScope,
+    fun launchOnIO(
+        delayMillis: Long = 0L,
         block: suspend CoroutineScope.() -> Unit
-    ) {
-        withContext(scope.coroutineContext) { block() }
+    ): Job {
+        val ioScope = CoroutineScope(Dispatchers.IO + CoroutineName("IO"))
+        return ioScope.launch {
+            delay(delayMillis)
+            block()
+        }
     }
 
     /**
-     * Runs a block of code on the UI thread and suspends until it's done.
+     * Runs a block of code on the UI thread and returns a result.
      * @param block The coroutine code to be executed.
      */
-    suspend fun withUIContext(block: suspend CoroutineScope.() -> Unit) =
-        withContext(uiScope, block)
+    suspend fun <T> withUIContext(block: suspend CoroutineScope.() -> T): T {
+        return withContext(Dispatchers.Main) { block() }
+    }
 
     /**
-     * Runs a block of code on the IO thread and suspends until it's done.
+     * Runs a block of code on the IO thread and returns a result.
      * @param block The coroutine code to be executed.
      */
-    suspend fun withIOContext(block: suspend CoroutineScope.() -> Unit) =
-        withContext(ioScope, block)
+    suspend fun <T> withIOContext(block: suspend CoroutineScope.() -> T): T {
+        return withContext(Dispatchers.IO) { block() }
+    }
 
     /**
-     * Runs a block of code multiple times on the IO thread and suspends until it's done.
+     * Repeats a block of code multiple times on the IO thread and suspends until it's done.
      * @param times The number of times the block should be run.
      * @param block The coroutine code to be executed.
      */
@@ -99,6 +62,45 @@ object CoroutineUtils {
         withIOContext {
             repeat(times) {
                 launch { block() }
+            }
+        }
+    }
+
+    /**
+     * Periodically executes a block of code on the specified dispatcher.
+     * @param intervalMillis The interval time in milliseconds between each execution of the block.
+     * @param block The coroutine code to be executed periodically.
+     */
+    fun periodicTask(
+        intervalMillis: Long,
+        dispatcher: CoroutineDispatcher = Dispatchers.Main,
+        block: suspend CoroutineScope.() -> Unit
+    ): Job {
+        val scope = CoroutineScope(dispatcher + CoroutineName("PeriodicTask"))
+        return scope.launch {
+            while (isActive) {
+                block()
+                delay(intervalMillis)
+            }
+        }
+    }
+
+    /**
+     * Safely runs a coroutine and catches any exceptions.
+     * @param block The coroutine code to be executed.
+     * @param onError Optional callback that gets invoked if an exception is caught.
+     */
+    fun launchCatching(
+        dispatcher: CoroutineDispatcher = Dispatchers.Main,
+        block: suspend CoroutineScope.() -> Unit,
+        onError: (Throwable) -> Unit = {}
+    ): Job {
+        val scope = CoroutineScope(dispatcher + CoroutineName("SafeLaunch"))
+        return scope.launch {
+            try {
+                block()
+            } catch (e: Throwable) {
+                onError(e)
             }
         }
     }
