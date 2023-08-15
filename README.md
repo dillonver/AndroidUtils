@@ -1,4 +1,4 @@
 # AndroidUtils
 
-implementation 'com.github.dillonver:AndroidUtils:1.0.2'
+implementation 'com.github.dillonver:AndroidUtils:1.0.3'
 
