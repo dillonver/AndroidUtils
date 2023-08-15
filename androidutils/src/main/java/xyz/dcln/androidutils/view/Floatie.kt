@@ -4,14 +4,18 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.Animation
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import xyz.dcln.androidutils.utils.CoroutineUtils
 
 /**
  * `Floatie` - A flexible and easy-to-use floating window manager for Android.
@@ -64,6 +68,10 @@ class Floatie private constructor(
     private var lastX: Int = 0
     private var lastY: Int = 0
 
+    private var enterAnimation: Animation? = null
+    private var exitAnimation: Animation? = null
+
+    private var displayDuration: Long? = null
 
     init {
         mLayoutParams.apply {
@@ -115,6 +123,14 @@ class Floatie private constructor(
         return updateView(LayoutInflater.from(context).inflate(layoutResId, null), initView)
     }
 
+    fun setEnterAnimation(animation: Animation): Floatie = apply {
+        this.enterAnimation = animation
+    }
+
+    fun setExitAnimation(animation: Animation): Floatie = apply {
+        this.exitAnimation = animation
+    }
+
     fun withTag(newTag: String) = apply {
         // Remove the current instance from map
         instances.remove(this.tag)
@@ -142,6 +158,10 @@ class Floatie private constructor(
 
     fun setBackgroundDimAmount(amount: Float) = apply { mLayoutParams.dimAmount = amount }
     fun setWindowFlags(flags: Int) = apply { mLayoutParams.flags = flags }
+
+    fun setDisplayDuration(durationMillis: Long): Floatie = apply {
+        this.displayDuration = durationMillis
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     fun setDraggable(draggable: Boolean): Floatie = apply {
@@ -195,6 +215,9 @@ class Floatie private constructor(
         }
         lastX = 0
         lastY = 0
+        enterAnimation = null
+        exitAnimation = null
+        displayDuration = null
 
         // Clear the view
         mView = null
@@ -205,21 +228,27 @@ class Floatie private constructor(
 
     fun show() {
         if (!isAddedToWindow) {
-            mView?.let {
-                mWindowManager.addView(it, mLayoutParams)
+            mView?.let { view ->
+                mWindowManager.addView(view, mLayoutParams)
+                enterAnimation?.let { view.startAnimation(it) }
                 isAddedToWindow = true
+                displayDuration?.let { duration ->
+                    CoroutineUtils.launchOnUI(duration) { hide() }
+                }
             }
         }
     }
 
     fun hide() {
         if (isAddedToWindow) {
-            mView?.let {
-                mWindowManager.removeView(it)
+            mView?.let { view ->
+                exitAnimation?.let { view.startAnimation(it) }
+                mWindowManager.removeView(view)
                 isAddedToWindow = false
             }
         }
     }
+
 
     companion object {
         private val instances = mutableMapOf<String, Floatie>()
