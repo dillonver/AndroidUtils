@@ -20,4 +20,6 @@
         <!-- Change status bar font color to black -->
         <item name="android:windowLightStatusBar">false</item>
     </style>
+
+
 </resources>

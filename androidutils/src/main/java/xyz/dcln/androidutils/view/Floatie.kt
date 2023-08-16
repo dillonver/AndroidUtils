@@ -11,9 +11,13 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.view.animation.TranslateAnimation
+import androidx.annotation.AnimRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import xyz.dcln.androidutils.R
 import xyz.dcln.androidutils.utils.CoroutineUtils
 import java.lang.ref.WeakReference
 import java.util.UUID
@@ -70,8 +74,6 @@ class Floatie private constructor(
     private var lastX: Int = 0
     private var lastY: Int = 0
 
-    private var enterAnimation: Animation? = null
-    private var exitAnimation: Animation? = null
     private var displayDuration: Long? = null
 
     private var onWindowException: ((Exception) -> Unit)? = null
@@ -112,7 +114,10 @@ class Floatie private constructor(
             format = PixelFormat.TRANSLUCENT
         }
 
-
+        //默认外部不能点击
+        setOutsideTouchable(false)
+        //默认半透明0.3f
+        setBackgroundDimAmount(0.3f)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -159,10 +164,8 @@ class Floatie private constructor(
         this.onPermissionException = callback
     }
 
-    fun setAnimation(enter: Animation? = null, exit: Animation? = null) = apply {
-        this.enterAnimation = enter
-        this.exitAnimation = exit
-    }
+    fun setAnimationStyle(animationStyle: Int = R.style.CustomPopWindowStyle) =
+        apply { mLayoutParams.windowAnimations = animationStyle }
 
 
     fun setWidth(width: Int = WindowManager.LayoutParams.WRAP_CONTENT) =
@@ -187,8 +190,6 @@ class Floatie private constructor(
             mWindowManager.updateViewLayout(mView, mLayoutParams)
         }
     }
-
-
 
 
     fun setBackgroundDimAmount(amount: Float) = apply {
@@ -224,6 +225,7 @@ class Floatie private constructor(
                     lastY = event.rawY.toInt()
                     true // 表示这个触摸事件已经被消费了
                 }
+
                 MotionEvent.ACTION_MOVE -> {
                     val x = event.rawX.toInt()
                     val y = event.rawY.toInt()
@@ -238,15 +240,22 @@ class Floatie private constructor(
                     lastY = y
                     true // 表示这个触摸事件已经被消费了
                 }
+
                 else -> false // 其他情况，我们返回 false 来表示这个触摸事件没有被消费
             }
         }
     }
 
 
-
     fun setWindowExceptionCallback(callback: (Exception) -> Unit): Floatie = apply {
         this.onWindowException = callback
+    }
+
+
+    //慎用
+    fun getFloatieLayoutParams(): WindowManager.LayoutParams {
+        mLayoutParams.windowAnimations
+        return this.mLayoutParams
     }
 
     fun show() {
@@ -266,7 +275,6 @@ class Floatie private constructor(
             if (!isAddedToWindow) {
                 mView?.let { view ->
                     mWindowManager.addView(view, mLayoutParams)
-                    enterAnimation?.let { view.startAnimation(it) }
                     isAddedToWindow = true
                     onShow?.let { it(this) }
                     displayDuration?.let { duration ->
@@ -288,20 +296,7 @@ class Floatie private constructor(
     fun hide() {
         mView?.let { view ->
             if (isAddedToWindow) {
-                exitAnimation?.let { animation ->
-                    animation.setAnimationListener(object : Animation.AnimationListener {
-                        override fun onAnimationEnd(animation: Animation?) {
-                            mWindowManager.removeView(view)
-                        }
-
-                        override fun onAnimationStart(animation: Animation?) {}
-                        override fun onAnimationRepeat(animation: Animation?) {}
-                    })
-                    view.startAnimation(animation)
-                } ?: run {
-                    // Directly remove the view from the window manager
-                    mWindowManager.removeView(view)
-                }
+                mWindowManager.removeView(view)
                 isAddedToWindow = false
                 onHide?.let { it(this) }
                 if (!reuse) {
@@ -310,7 +305,7 @@ class Floatie private constructor(
             }
         }
 
-        clear()
+        //clear()
     }
 
 

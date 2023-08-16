@@ -42,8 +42,8 @@ class FloatieTestActivity : BaseBindingActivity<ActivityTestBinding>() {
         viewBinding.tvCancel.setOnClickListener {
             Floatie.cancelByTag("dillonTest")
 
-           // Floatie.cancelAll()
-           // finish()
+            // Floatie.cancelAll()
+            // finish()
 
         }
         viewBinding.tvTest3.apply {
@@ -68,6 +68,7 @@ class FloatieTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                             setOnClickListener { hide() }
                         }
                     }
+                    setAnimationStyle()
 
                     //setDisplayDuration(5*1000L)
                     //setGravity(Gravity.TOP)
@@ -75,9 +76,9 @@ class FloatieTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                     //setHeight(ScreenUtils.getScreenHeight()*3/4)
                     //setYOffset(100)
                     //setXOffset(100)
+                    //setDraggable(true)
                     //setBackgroundDimAmount(0f)
-                    setDraggable(true)
-                    setOutsideTouchable(true)
+                    //setOutsideTouchable(true)
 
                 }.show()
             }
@@ -118,7 +119,8 @@ class FloatieTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                 //setHeight(ScreenUtils.getScreenHeight()*3/4)
                 //setYOffset(100)
                 //setXOffset(100)
-                setBackgroundDimAmount(0.5f)
+//                setBackgroundDimAmount(1f)
+//                setOutsideTouchable(true)
                 setDraggable(true)
             }
 
