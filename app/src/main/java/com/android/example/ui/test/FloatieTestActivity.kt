@@ -75,9 +75,9 @@ class FloatieTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                     //setHeight(ScreenUtils.getScreenHeight()*3/4)
                     //setYOffset(100)
                     //setXOffset(100)
-                    setBackgroundDimAmount(0f)
+                    //setBackgroundDimAmount(0f)
                     setDraggable(true)
-
+                    setOutsideTouchable(true)
 
                 }.show()
             }

@@ -10,19 +10,14 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import xyz.dcln.androidutils.utils.CoroutineUtils
-import xyz.dcln.androidutils.utils.GsonUtils
-import xyz.dcln.androidutils.utils.LogUtils
-import xyz.dcln.androidutils.utils.PermissionUtils
 import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.random.Random
 
 /**
  * `Floatie` - A flexible and easy-to-use floating window manager for Android.
@@ -181,11 +176,20 @@ class Floatie private constructor(
     fun setYOffset(px: Int) = apply { mLayoutParams.y = px }
 
     fun setOutsideTouchable(touchable: Boolean) = apply {
-        mLayoutParams.flags = mLayoutParams.flags.apply {
-            if (touchable) this or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-            else this and WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL.inv()
+        val flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        if (touchable) {
+            mLayoutParams.flags = mLayoutParams.flags or flags
+        } else {
+            mLayoutParams.flags = mLayoutParams.flags and flags.inv()
+        }
+
+        if (isAddedToWindow) {
+            mWindowManager.updateViewLayout(mView, mLayoutParams)
         }
     }
+
+
+
 
     fun setBackgroundDimAmount(amount: Float) = apply {
         mLayoutParams.dimAmount = amount
@@ -218,23 +222,28 @@ class Floatie private constructor(
                 MotionEvent.ACTION_DOWN -> {
                     lastX = event.rawX.toInt()
                     lastY = event.rawY.toInt()
+                    true // 表示这个触摸事件已经被消费了
                 }
-
                 MotionEvent.ACTION_MOVE -> {
                     val x = event.rawX.toInt()
                     val y = event.rawY.toInt()
                     val dx = x - lastX
                     val dy = y - lastY
+
                     mLayoutParams.x += dx
                     mLayoutParams.y += dy
+
                     mWindowManager.updateViewLayout(v, mLayoutParams)
                     lastX = x
                     lastY = y
+                    true // 表示这个触摸事件已经被消费了
                 }
+                else -> false // 其他情况，我们返回 false 来表示这个触摸事件没有被消费
             }
-            true
         }
     }
+
+
 
     fun setWindowExceptionCallback(callback: (Exception) -> Unit): Floatie = apply {
         this.onWindowException = callback
@@ -284,6 +293,7 @@ class Floatie private constructor(
                         override fun onAnimationEnd(animation: Animation?) {
                             mWindowManager.removeView(view)
                         }
+
                         override fun onAnimationStart(animation: Animation?) {}
                         override fun onAnimationRepeat(animation: Animation?) {}
                     })
@@ -305,7 +315,8 @@ class Floatie private constructor(
 
 
     companion object {
-        private val instances: ConcurrentHashMap<String, WeakReference<Floatie>> = ConcurrentHashMap()
+        private val instances: ConcurrentHashMap<String, WeakReference<Floatie>> =
+            ConcurrentHashMap()
 
         fun create(
             context: Context,
