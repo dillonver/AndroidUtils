@@ -1,21 +1,28 @@
 package xyz.dcln.androidutils.view
 
 import android.annotation.SuppressLint
+import android.app.Application
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
-import android.view.Gravity
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import xyz.dcln.androidutils.utils.CoroutineUtils
+import xyz.dcln.androidutils.utils.GsonUtils
+import xyz.dcln.androidutils.utils.LogUtils
+import xyz.dcln.androidutils.utils.PermissionUtils
+import java.lang.ref.WeakReference
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.random.Random
 
 /**
  * `Floatie` - A flexible and easy-to-use floating window manager for Android.
@@ -53,8 +60,8 @@ import xyz.dcln.androidutils.utils.CoroutineUtils
 @SuppressLint("ObsoleteSdkInt")
 class Floatie private constructor(
     private val context: Context,
-    var tag: String = "default",
-    private val reuse: Boolean = false
+    private val reuse: Boolean = false,
+    val tag: String // Make tag an instance variable instead of static
 ) {
 
     private val mWindowManager: WindowManager =
@@ -70,33 +77,73 @@ class Floatie private constructor(
 
     private var enterAnimation: Animation? = null
     private var exitAnimation: Animation? = null
-
     private var displayDuration: Long? = null
 
-    init {
-        mLayoutParams.apply {
-            width = WindowManager.LayoutParams.WRAP_CONTENT
-            height = WindowManager.LayoutParams.WRAP_CONTENT
-            type =
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_PHONE
-                else WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-            format = PixelFormat.TRANSLUCENT
-        }
+    private var onWindowException: ((Exception) -> Unit)? = null
+    private var onPermissionException: ((SecurityException) -> Unit)? = null
 
+    private var onShow: ((Floatie) -> Unit)? = null
+    private var onHide: ((Floatie) -> Unit)? = null
+
+
+    init {
         if (context is AppCompatActivity) {
             context.lifecycle.addObserver(object : DefaultLifecycleObserver {
                 override fun onDestroy(owner: LifecycleOwner) {
                     super.onDestroy(owner)
                     hide()
+                    if (!reuse) {
+                        instances.remove(tag)
+                    }
+                    context.lifecycle.removeObserver(this)
+
                 }
             })
         }
+        mLayoutParams.apply {
+            width = WindowManager.LayoutParams.WRAP_CONTENT
+            height = WindowManager.LayoutParams.WRAP_CONTENT
+            type =
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_PHONE
+                else {
+                    if (context is Application) {
+                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                    } else {
+                        WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG
+                    }
+                }
+
+            flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            format = PixelFormat.TRANSLUCENT
+        }
+
+
     }
 
+    @SuppressLint("ClickableViewAccessibility")
+    private fun clear() {
+        onShow = null
+        onHide = null
+        onPermissionException = null
+        onWindowException = null
+        mView?.setOnTouchListener(null)
+    }
+
+    fun getFloatTag(): String {
+        return tag
+    }
+
+
     fun setContentView(newView: View, initView: View.() -> Unit = {}): Floatie {
-        // Set the new view and apply the initialization function to it
+        if (isAddedToWindow) {
+            mWindowManager.removeView(mView)
+        }
+
         mView = newView.apply(initView)
+
+        if (isAddedToWindow) {
+            mWindowManager.addView(mView, mLayoutParams)
+        }
         return this
     }
 
@@ -105,40 +152,23 @@ class Floatie private constructor(
         return setContentView(LayoutInflater.from(context).inflate(layoutResId, null), initView)
     }
 
-
-    fun updateView(newView: View, initView: View.() -> Unit = {}): Floatie {
-        // Set the new view and apply the initialization function to it
-        mView = newView.apply(initView)
-
-        // If the FloatWindow instance is currently added to the window, update the view in-place
-        if (isAddedToWindow) {
-            mWindowManager.updateViewLayout(mView, mLayoutParams)
-        }
-
-        return this
+    fun setLifecycleListener(
+        onShow: ((Floatie) -> Unit)? = null,
+        onHide: ((Floatie) -> Unit)? = null
+    ): Floatie = apply {
+        this.onShow = onShow
+        this.onHide = onHide
     }
 
-    fun updateView(layoutResId: Int, initView: View.() -> Unit = {}): Floatie {
-        // Inflate a new view from the given layout resource ID and update
-        return updateView(LayoutInflater.from(context).inflate(layoutResId, null), initView)
+    fun setPermissionExceptionCallback(callback: (SecurityException) -> Unit): Floatie = apply {
+        this.onPermissionException = callback
     }
 
-    fun setEnterAnimation(animation: Animation): Floatie = apply {
-        this.enterAnimation = animation
+    fun setAnimation(enter: Animation? = null, exit: Animation? = null) = apply {
+        this.enterAnimation = enter
+        this.exitAnimation = exit
     }
 
-    fun setExitAnimation(animation: Animation): Floatie = apply {
-        this.exitAnimation = animation
-    }
-
-    fun withTag(newTag: String) = apply {
-        // Remove the current instance from map
-        instances.remove(this.tag)
-        // Update the tag
-        this.tag = newTag
-        // Put the updated instance back into map
-        instances[newTag] = this
-    }
 
     fun setWidth(width: Int = WindowManager.LayoutParams.WRAP_CONTENT) =
         apply { mLayoutParams.width = width }
@@ -151,12 +181,20 @@ class Floatie private constructor(
     fun setYOffset(px: Int) = apply { mLayoutParams.y = px }
 
     fun setOutsideTouchable(touchable: Boolean) = apply {
-        mLayoutParams.flags =
-            mLayoutParams.flags or (WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL.takeIf { touchable }
-                ?: 0)
+        mLayoutParams.flags = mLayoutParams.flags.apply {
+            if (touchable) this or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+            else this and WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL.inv()
+        }
     }
 
-    fun setBackgroundDimAmount(amount: Float) = apply { mLayoutParams.dimAmount = amount }
+    fun setBackgroundDimAmount(amount: Float) = apply {
+        mLayoutParams.dimAmount = amount
+        mLayoutParams.flags = mLayoutParams.flags or WindowManager.LayoutParams.FLAG_DIM_BEHIND
+        if (isAddedToWindow) {
+            mWindowManager.updateViewLayout(mView, mLayoutParams)
+        }
+    }
+
     fun setWindowFlags(flags: Int) = apply { mLayoutParams.flags = flags }
 
     fun setDisplayDuration(durationMillis: Long): Floatie = apply {
@@ -198,90 +236,121 @@ class Floatie private constructor(
         }
     }
 
-    fun reset() {
-        // Remove the view from window manager if it is currently added
-        hide()
-
-        // Reset the layout params to default
-        mLayoutParams.apply {
-            width = WindowManager.LayoutParams.WRAP_CONTENT
-            height = WindowManager.LayoutParams.WRAP_CONTENT
-            flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-            format = PixelFormat.TRANSLUCENT
-            gravity = Gravity.NO_GRAVITY
-            x = 0
-            y = 0
-            dimAmount = 0f
-        }
-        lastX = 0
-        lastY = 0
-        enterAnimation = null
-        exitAnimation = null
-        displayDuration = null
-
-        // Clear the view
-        mView = null
-
-        // Reset the flag
-        isAddedToWindow = false
+    fun setWindowExceptionCallback(callback: (Exception) -> Unit): Floatie = apply {
+        this.onWindowException = callback
     }
 
     fun show() {
-        if (!isAddedToWindow) {
-            mView?.let { view ->
-                mWindowManager.addView(view, mLayoutParams)
-                enterAnimation?.let { view.startAnimation(it) }
-                isAddedToWindow = true
-                displayDuration?.let { duration ->
-                    CoroutineUtils.launchOnUI(duration) { hide() }
+        // Before trying to show the window, we check for the necessary permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            context is Application &&
+            !Settings.canDrawOverlays(context)
+        ) {
+            onPermissionException?.invoke(
+                SecurityException("Permission required: ACTION_MANAGE_OVERLAY_PERMISSION")
+            )
+            return
+        }
+
+        // Proceed to show the window as normal
+        try {
+            if (!isAddedToWindow) {
+                mView?.let { view ->
+                    mWindowManager.addView(view, mLayoutParams)
+                    enterAnimation?.let { view.startAnimation(it) }
+                    isAddedToWindow = true
+                    onShow?.let { it(this) }
+                    displayDuration?.let { duration ->
+                        CoroutineUtils.launchOnUI(duration) { hide() }
+                    }
                 }
             }
+        } catch (e: Exception) {
+            // Handle the BadTokenException
+            onWindowException?.invoke(e)
         }
     }
 
+
+    fun isShowing(): Boolean {
+        return isAddedToWindow
+    }
+
     fun hide() {
-        if (isAddedToWindow) {
-            mView?.let { view ->
-                exitAnimation?.let { view.startAnimation(it) }
-                mWindowManager.removeView(view)
+        mView?.let { view ->
+            if (isAddedToWindow) {
+                exitAnimation?.let { animation ->
+                    animation.setAnimationListener(object : Animation.AnimationListener {
+                        override fun onAnimationEnd(animation: Animation?) {
+                            mWindowManager.removeView(view)
+                        }
+                        override fun onAnimationStart(animation: Animation?) {}
+                        override fun onAnimationRepeat(animation: Animation?) {}
+                    })
+                    view.startAnimation(animation)
+                } ?: run {
+                    // Directly remove the view from the window manager
+                    mWindowManager.removeView(view)
+                }
                 isAddedToWindow = false
+                onHide?.let { it(this) }
+                if (!reuse) {
+                    instances.remove(tag)
+                }
             }
         }
+
+        clear()
     }
 
 
     companion object {
-        private val instances = mutableMapOf<String, Floatie>()
+        private val instances: ConcurrentHashMap<String, WeakReference<Floatie>> = ConcurrentHashMap()
 
         fun create(
             context: Context,
-            tag: String = "default",
+            tag: String? = null,
             reuse: Boolean = false,
             init: Floatie.() -> Unit
         ): Floatie {
-            return if (reuse) {
-                // If reuse is true, get or create a FloatWindow instance associated with the given tag.
-                instances.getOrPut(tag) {
-                    Floatie(context, tag, true).apply(init)
+            var floatieTag = tag ?: generateUniqueTag()
+            val existingFloatie = instances[floatieTag]?.get()
+            return if (!reuse || existingFloatie == null) {
+                if (instances.containsKey(floatieTag)) {
+                    floatieTag = generateUniqueTag()
                 }
+                val newFloatie = Floatie(context, reuse, floatieTag).apply(init)
+                instances[floatieTag] = WeakReference(newFloatie)
+                newFloatie
             } else {
-                // If reuse is false, always create a new FloatWindow instance.
-                Floatie(context, tag, false).apply(init)
+                // Reuse the existing Floatie instance
+                existingFloatie.apply(init)
             }
         }
 
+        private fun generateUniqueTag(): String {
+            return UUID.randomUUID().toString()
+        }
+
+
+        fun isShowing(tag: String): Boolean {
+            return instances[tag]?.get()?.isAddedToWindow == true
+        }
+
         fun cancelAll() {
-            for (window in instances.values) {
-                window.hide()
+            for (weakRef in instances.values) {
+                weakRef.get()?.hide()
             }
             instances.clear()
         }
 
         fun cancelByTag(tag: String) {
-            instances[tag]?.let {
+            instances[tag]?.get()?.let {
                 it.hide()
                 instances.remove(tag)
             }
         }
+
     }
+
 }

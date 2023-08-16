@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.flow
 import xyz.dcln.androidutils.utils.CoroutineUtils
 import xyz.dcln.androidutils.utils.CoroutineUtils.launchOnIO
 import xyz.dcln.androidutils.utils.CoroutineUtils.launchOnUI
-import xyz.dcln.androidutils.utils.CoroutineUtils.onUIThread
 
 fun main() {
     // Example 1: Launch a coroutine on the UI thread
@@ -37,15 +36,4 @@ fun main() {
         }
     }
 
-    CoroutineUtils.launchOnUI {
-        exampleFlow.onUIThread { value ->
-            println("Collected value $value from the Flow on the UI thread")
-        }
-    }
-
-    // Example 6: Cancel all coroutines launched by CoroutineUtils
-    CoroutineUtils.cancelAll()
-
-    // Don't forget to add the kotlinx.coroutines dependency to your build.gradle file:
-    // implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
 }

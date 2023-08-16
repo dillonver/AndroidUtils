@@ -8,6 +8,7 @@ import com.android.example.ui.test.BarUtilsTestAct
 import com.android.example.ui.test.ClipboardUtilsTestAct
 import com.android.example.ui.test.CommonTestActivity
 import com.android.example.ui.test.DeviceUtilsTestAct
+import com.android.example.ui.test.FloatieTestActivity
 import com.android.example.ui.test.KeyboardUtilsTestAct
 import com.android.example.ui.test.NetworkUtilsTestAct
 import com.android.example.ui.test.PermissionUtilsActivity
@@ -24,6 +25,10 @@ class MainAct : BaseBindingActivity<ActivityMainBinding>() {
     @RequiresApi(Build.VERSION_CODES.R)
     override fun initListener() {
         super.initListener()
+
+        viewBinding.tvFloatieTest.setOnClickListener {
+            ActivityUtils.startActivity<FloatieTestActivity>()
+        }
         viewBinding.tvCommonTest.setOnClickListener {
             ActivityUtils.startActivity<CommonTestActivity>()
         }

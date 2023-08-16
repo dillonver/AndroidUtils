@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:padding="@dimen/dp_20"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_gravity="center">
+    
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="欢迎使用呼必应"
+        android:textColor="@color/black"
+        android:textSize="@dimen/text_16sp"
+        android:textStyle="bold"
+        android:layout_marginTop="@dimen/dp_16"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/tvContent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="我们非常重视您的个人信息保护，关于个人信息收集和使用的详情信息，在使用呼必应前，请您认真查阅《隐私政策》和《用户协议》，您同意并接受全部条款后再使用我们的服务。"
+        android:textColor="@color/black"
+
+        android:textSize="@dimen/text_12sp"
+        android:layout_marginTop="@dimen/dp_20"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+    
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tvAgree"
+        android:layout_width="144dp"
+        android:layout_height="@dimen/dp_36"
+        android:gravity="center"
+        android:text="同意并继续"
+        android:textColor="@color/black"
+        android:textSize="@dimen/text_14sp"
+        android:textStyle="bold"
+        android:layout_marginTop="@dimen/dp_20"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvContent" />
+
+    <TextView
+        android:id="@+id/tvCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="不同意"
+        android:textColor="@color/black"
+        android:textSize="@dimen/text_14sp"
+        android:layout_marginTop="@dimen/dp_8"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvAgree" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

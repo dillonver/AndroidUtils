@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
     <application
         android:name="com.android.example.base.BaseApp"
@@ -43,6 +44,9 @@
         <activity android:name="com.android.example.ui.test.RegexUtilsTestAct" />
         <activity android:name="com.android.example.ui.test.KeyboardUtilsTestAct" />
         <activity android:name="com.android.example.ui.test.PermissionUtilsActivity" />
+        <activity
+            android:name="com.android.example.ui.test.FloatieTestActivity"
+            android:launchMode="singleTop" />
 
         <provider
             android:name="xyz.dcln.androidutils.AndroidUtils$InitProvider"
