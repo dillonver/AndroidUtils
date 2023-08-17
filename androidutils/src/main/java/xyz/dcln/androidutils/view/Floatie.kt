@@ -11,16 +11,12 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
-import android.view.animation.TranslateAnimation
-import androidx.annotation.AnimRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import xyz.dcln.androidutils.R
 import xyz.dcln.androidutils.utils.CoroutineUtils
-import xyz.dcln.androidutils.utils.ToastUtils.toastShort
+import xyz.dcln.androidutils.utils.LogUtils
 import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -72,8 +68,8 @@ class Floatie private constructor(
     private var mView: View? = null
     private var isAddedToWindow: Boolean = false
 
-    private var isDraggable: Boolean = false
     private var dismissOnOutsideClick: Boolean = true
+    private var isDraggable: Boolean = false
 
     private var lastX: Int = 0
     private var lastY: Int = 0
@@ -118,12 +114,14 @@ class Floatie private constructor(
             format = PixelFormat.TRANSLUCENT
         }
 
-        //默认外部不能点击
-        setOutsideTouchable(false)
         //默认半透明0.3f
         setBackgroundDimAmount(0.3f)
 
-        setupTouchListener()
+        //默认外部点击关闭
+        setDismissOnOutsideClick(true)
+
+        //默认不穿透到悬浮窗下面
+        setTouchThroughEnabled(false)
     }
 
 
@@ -136,12 +134,15 @@ class Floatie private constructor(
         if (isAddedToWindow) {
             mWindowManager.removeView(mView)
         }
-
         mView = newView.apply(initView)
 
         if (isAddedToWindow) {
             mWindowManager.addView(mView, mLayoutParams)
         }
+
+        //默认是否允许拖动
+        setDraggable(isDraggable)
+
         return this
     }
 
@@ -162,7 +163,7 @@ class Floatie private constructor(
         this.onPermissionException = callback
     }
 
-    fun setAnimationStyle(animationStyle: Int = R.style.FloatieCustomPopWindowStyle) =
+    fun setAnimationStyle(animationStyle: Int = R.style.FloatieDefaultWindowStyle) =
         apply { mLayoutParams.windowAnimations = animationStyle }
 
 
@@ -175,8 +176,6 @@ class Floatie private constructor(
     fun setGravity(gravity: Int) = apply { mLayoutParams.gravity = gravity }
     fun setXOffset(px: Int) = apply { mLayoutParams.x = px }
     fun setYOffset(px: Int) = apply { mLayoutParams.y = px }
-
-
 
 
     fun setBackgroundDimAmount(amount: Float) = apply {
@@ -205,12 +204,12 @@ class Floatie private constructor(
      * 当此值设置为true时，点击Floatie外部区域时，事件会被传递到下层的UI元素，
      * 在这种情况下，setDismissOnOutsideClick方法的设置将无效。
      *
-     * @param touchable 如果为true，点击外部区域事件会传递到下层UI元素；如果为false，则不会。
+     * @param through 如果为true，点击外部区域事件会传递到下层UI元素；如果为false，则不会。
      * @return 返回Floatie实例，便于链式调用。
      */
-    fun setOutsideTouchable(touchable: Boolean) = apply {
+    fun setTouchThroughEnabled(through: Boolean) = apply {
         val flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-        if (touchable) {
+        if (through) {
             mLayoutParams.flags = mLayoutParams.flags or flags
         } else {
             mLayoutParams.flags = mLayoutParams.flags and flags.inv()
@@ -224,18 +223,20 @@ class Floatie private constructor(
     /**
      * 设置点击Floatie外部区域是否会导致Floatie消失。
      *
-     * 注意：当setOutsideTouchable设置为true时，此方法设置将无效，
-     * 因为此时点击事件已经被传递给了下层UI元素。
+     * 注意：当setTouchThroughEnabled设置为true时，此方法设置将无效，
+     * 因为此时点击事件已经被传递给了下层UI元素(如需关闭Floatie，请手动处理)。
      *
      * @param dismissOnOutsideClick 如果为true，点击外部区域会导致Floatie消失；如果为false，则不会。
      * @return 返回Floatie实例，便于链式调用。
      */
     fun setDismissOnOutsideClick(dismissOnOutsideClick: Boolean): Floatie = apply {
         this.dismissOnOutsideClick = dismissOnOutsideClick
+
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setupTouchListener() {
+        LogUtils.i("setupTouchListener")
         mView?.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -265,7 +266,12 @@ class Floatie private constructor(
                     if (dismissOnOutsideClick) {
                         val location = IntArray(2)
                         v.getLocationOnScreen(location)
-                        val rect = Rect(location[0], location[1], location[0] + v.width, location[1] + v.height)
+                        val rect = Rect(
+                            location[0],
+                            location[1],
+                            location[0] + v.width,
+                            location[1] + v.height
+                        )
 
                         if (!rect.contains(event.rawX.toInt(), event.rawY.toInt())) {
                             hide()
