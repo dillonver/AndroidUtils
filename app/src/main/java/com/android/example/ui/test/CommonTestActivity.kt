@@ -1,14 +1,20 @@
 package com.android.example.ui.test
 
+import android.widget.Toast
 import androidx.core.view.isVisible
 import com.android.example.R
 import com.android.example.base.BaseBindingActivity
 import com.android.example.databinding.ActivityTestBinding
 import xyz.dcln.androidutils.utils.ActivityUtils.addTopActivityChangeListener
+import xyz.dcln.androidutils.utils.AppUtils
 import xyz.dcln.androidutils.utils.AppUtils.addAppStateListener
+import xyz.dcln.androidutils.utils.CoroutineUtils
 import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.LogUtils.logI
 import xyz.dcln.androidutils.utils.PathUtils
+import xyz.dcln.androidutils.utils.ToastUtils
+import xyz.dcln.androidutils.utils.ToastUtils.toastLong
+import xyz.dcln.androidutils.utils.ToastUtils.toastShort
 
 
 class CommonTestActivity : BaseBindingActivity<ActivityTestBinding>() {
@@ -29,75 +35,49 @@ class CommonTestActivity : BaseBindingActivity<ActivityTestBinding>() {
     override fun initView() {
         super.initView()
         viewBinding.ivBg.setImageResource(R.drawable.img_act_bg4)
-        viewBinding.etTest.isVisible = true
+        viewBinding.etTest.isVisible = false
     }
 
 
     override fun initListener() {
         super.initListener()
 
-        viewBinding.tvCancel.setOnClickListener {
-            //  viewBinding.etTest.allowAllInput()
-            return@setOnClickListener
-            finish()
-
-        }
         viewBinding.tvTest3.apply {
-            text = "限制数字"
+            text = "toastShort"
             setOnClickListener {
-                LogUtils.i(
-                    PathUtils.getDataPath(),
-                    PathUtils.getExternalAppFilesPath(),
-                    PathUtils.getExternalAppCachePath(),
-                    PathUtils.getExternalAppPicturesPath()
-                )
-                viewBinding.etTest.text.clear()
-//                viewBinding.etTest.limitNumbers(
-//                    isMasked = false,
-//                    allowDecimal = true,
-//                    onValidInput = { valid, position ->
-//                        toastShort("有效输入：$valid ,P：$position")
-//
-//                    },
-//                    onInvalidInput = { invalid, position ->
-//                        toastShort("无效输入：$invalid ,P：$position")
-//                    })
-            }
-        }
+                toastShort( "12312")
+                finish()
 
-        viewBinding.tvTest2.apply {
-            text = "限制字母"
-            setOnClickListener {
-                viewBinding.etTest.text.clear()
-//                viewBinding.etTest.limitLetters(
-//                    isMasked = false,
-//                    allowSymbols = true,
-//                    onValidInput = { valid, position ->
-//                        toastShort("有效输入：$valid ,P：$position")
-//
-//                    },
-//                    onInvalidInput = { invalid, position ->
-//                        toastShort("无效输入：$invalid ,P：$position")
-//                    })
             }
+
+        }
+        viewBinding.tvTest2.apply {
+            text = "toastLong"
+            setOnClickListener {
+                toastLong("21322131")
+                finish()
+            }
+
         }
 
         viewBinding.tvTest1.apply {
-            text = "限制字母和数字"
+            text = "showToast"
             setOnClickListener {
-                viewBinding.etTest.text.clear()
-//                viewBinding.etTest.limitNumbersAndLetters(onValidInput = { valid, position ->
-//                    toastShort("有效输入：$valid ,P：$position")
-//
-//                },
-//                    onInvalidInput = { invalid, position ->
-//                        toastShort("无效输入：$invalid ,P：$position")
-//                    })
+                //CoroutineUtils.launchOnUI {
+                    ToastUtils.showToast(AppUtils.getApp()) {
+                        msg = "0"
+                        cancelCurrent = true
+                    }
 
+               // }
+                finish()
             }
+
         }
 
-
+        viewBinding.tvCancel.setOnClickListener {
+            finish()
+        }
     }
 
     override fun onDestroy() {
