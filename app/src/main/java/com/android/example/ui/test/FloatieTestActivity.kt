@@ -6,7 +6,6 @@ import com.android.example.base.BaseBindingActivity
 import com.android.example.databinding.ActivityTestBinding
 import com.android.example.databinding.DialogTestABinding
 import xyz.dcln.androidutils.utils.ActivityUtils.addTopActivityChangeListener
-import xyz.dcln.androidutils.utils.AppUtils
 import xyz.dcln.androidutils.utils.AppUtils.addAppStateListener
 import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.LogUtils.logI
@@ -69,16 +68,16 @@ class FloatieTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                         }
                     }
                     setAnimationStyle()
-
                     //setDisplayDuration(5*1000L)
                     //setGravity(Gravity.TOP)
                     //setWidth(ScreenUtils.getScreenWidth()*3/4)
                     //setHeight(ScreenUtils.getScreenHeight()*3/4)
                     //setYOffset(100)
                     //setXOffset(100)
-                    //setDraggable(true)
                     //setBackgroundDimAmount(0f)
-                    //setOutsideTouchable(true)
+                    setDraggable(false)
+                    setOutsideTouchable(true)
+                    setDismissOnOutsideClick(true)
 
                 }.show()
             }
@@ -86,47 +85,7 @@ class FloatieTestActivity : BaseBindingActivity<ActivityTestBinding>() {
         }
 
         viewBinding.tvTest2.apply {
-            text = "复用弹窗"
-            val myTag = "tvTest2"
-            val floatie = Floatie.create(AppUtils.getApp(), myTag, true) {
-                setContentView(R.layout.dialog_test_a) {
-                    val binding = DialogTestABinding.bind(this)
-                    binding.tvAgree.apply {
-                        text = "我是同意"
-                        setOnClickListener { toastShort("点击了同意") }
-                    }
-                    binding.tvCancel.apply {
-                        text = "我是取消"
-                        setOnClickListener { hide() }
-                    }
-                }
-                setLifecycleListener(
-                    onShow = {
-                        LogUtils.i("onShow", tag = "Floatie")
-                    }, onHide = {
-                        LogUtils.i("onHide", tag = "Floatie")
-                    })
-                setPermissionExceptionCallback {
-                    LogUtils.i(it.message)
-                }
-                setWindowExceptionCallback {
-                    LogUtils.i(it.message)
 
-                }
-                //setDisplayDuration(5*1000L)
-                //setGravity(Gravity.TOP)
-                //setWidth(ScreenUtils.getScreenWidth()*3/4)
-                //setHeight(ScreenUtils.getScreenHeight()*3/4)
-                //setYOffset(100)
-                //setXOffset(100)
-//                setBackgroundDimAmount(1f)
-//                setOutsideTouchable(true)
-                setDraggable(true)
-            }
-
-            setOnClickListener {
-                floatie.show()
-            }
         }
 
         viewBinding.tvTest1.apply {

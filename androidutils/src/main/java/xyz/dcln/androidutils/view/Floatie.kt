@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.os.Build
 import android.provider.Settings
 import android.view.LayoutInflater
@@ -19,6 +20,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import xyz.dcln.androidutils.R
 import xyz.dcln.androidutils.utils.CoroutineUtils
+import xyz.dcln.androidutils.utils.ToastUtils.toastShort
 import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -71,6 +73,8 @@ class Floatie private constructor(
     private var isAddedToWindow: Boolean = false
 
     private var isDraggable: Boolean = false
+    private var dismissOnOutsideClick: Boolean = true
+
     private var lastX: Int = 0
     private var lastY: Int = 0
 
@@ -118,16 +122,10 @@ class Floatie private constructor(
         setOutsideTouchable(false)
         //默认半透明0.3f
         setBackgroundDimAmount(0.3f)
+
+        setupTouchListener()
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private fun clear() {
-        onShow = null
-        onHide = null
-        onPermissionException = null
-        onWindowException = null
-        mView?.setOnTouchListener(null)
-    }
 
     fun getFloatTag(): String {
         return tag
@@ -206,15 +204,16 @@ class Floatie private constructor(
         this.displayDuration = durationMillis
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     fun setDraggable(draggable: Boolean): Floatie = apply {
         this.isDraggable = draggable
-        if (draggable) {
-            setupTouchListener()
-        } else {
-            mView?.setOnTouchListener(null)
-        }
+        setupTouchListener()
     }
+
+    fun setDismissOnOutsideClick(dismissOnOutsideClick: Boolean): Floatie = apply {
+        this.dismissOnOutsideClick = dismissOnOutsideClick
+    }
+
+
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setupTouchListener() {
@@ -223,25 +222,40 @@ class Floatie private constructor(
                 MotionEvent.ACTION_DOWN -> {
                     lastX = event.rawX.toInt()
                     lastY = event.rawY.toInt()
-                    true // 表示这个触摸事件已经被消费了
+                    true
                 }
 
                 MotionEvent.ACTION_MOVE -> {
-                    val x = event.rawX.toInt()
-                    val y = event.rawY.toInt()
-                    val dx = x - lastX
-                    val dy = y - lastY
+                    if (isDraggable) {
+                        val x = event.rawX.toInt()
+                        val y = event.rawY.toInt()
+                        val dx = x - lastX
+                        val dy = y - lastY
 
-                    mLayoutParams.x += dx
-                    mLayoutParams.y += dy
+                        mLayoutParams.x += dx
+                        mLayoutParams.y += dy
 
-                    mWindowManager.updateViewLayout(v, mLayoutParams)
-                    lastX = x
-                    lastY = y
-                    true // 表示这个触摸事件已经被消费了
+                        mWindowManager.updateViewLayout(v, mLayoutParams)
+                        lastX = x
+                        lastY = y
+                    }
+                    true
                 }
 
-                else -> false // 其他情况，我们返回 false 来表示这个触摸事件没有被消费
+                MotionEvent.ACTION_UP -> {
+                    if (dismissOnOutsideClick) {
+                        val location = IntArray(2)
+                        v.getLocationOnScreen(location)
+                        val rect = Rect(location[0], location[1], location[0] + v.width, location[1] + v.height)
+
+                        if (!rect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                            hide()
+                        }
+                    }
+                    true
+                }
+
+                else -> false
             }
         }
     }
