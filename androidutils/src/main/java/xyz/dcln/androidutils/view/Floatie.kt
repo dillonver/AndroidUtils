@@ -176,18 +176,7 @@ class Floatie private constructor(
     fun setXOffset(px: Int) = apply { mLayoutParams.x = px }
     fun setYOffset(px: Int) = apply { mLayoutParams.y = px }
 
-    fun setOutsideTouchable(touchable: Boolean) = apply {
-        val flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-        if (touchable) {
-            mLayoutParams.flags = mLayoutParams.flags or flags
-        } else {
-            mLayoutParams.flags = mLayoutParams.flags and flags.inv()
-        }
 
-        if (isAddedToWindow) {
-            mWindowManager.updateViewLayout(mView, mLayoutParams)
-        }
-    }
 
 
     fun setBackgroundDimAmount(amount: Float) = apply {
@@ -209,11 +198,41 @@ class Floatie private constructor(
         setupTouchListener()
     }
 
+
+    /**
+     * 设置外部点击是否透传给下层UI元素。
+     *
+     * 当此值设置为true时，点击Floatie外部区域时，事件会被传递到下层的UI元素，
+     * 在这种情况下，setDismissOnOutsideClick方法的设置将无效。
+     *
+     * @param touchable 如果为true，点击外部区域事件会传递到下层UI元素；如果为false，则不会。
+     * @return 返回Floatie实例，便于链式调用。
+     */
+    fun setOutsideTouchable(touchable: Boolean) = apply {
+        val flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        if (touchable) {
+            mLayoutParams.flags = mLayoutParams.flags or flags
+        } else {
+            mLayoutParams.flags = mLayoutParams.flags and flags.inv()
+        }
+
+        if (isAddedToWindow) {
+            mWindowManager.updateViewLayout(mView, mLayoutParams)
+        }
+    }
+
+    /**
+     * 设置点击Floatie外部区域是否会导致Floatie消失。
+     *
+     * 注意：当setOutsideTouchable设置为true时，此方法设置将无效，
+     * 因为此时点击事件已经被传递给了下层UI元素。
+     *
+     * @param dismissOnOutsideClick 如果为true，点击外部区域会导致Floatie消失；如果为false，则不会。
+     * @return 返回Floatie实例，便于链式调用。
+     */
     fun setDismissOnOutsideClick(dismissOnOutsideClick: Boolean): Floatie = apply {
         this.dismissOnOutsideClick = dismissOnOutsideClick
     }
-
-
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setupTouchListener() {
