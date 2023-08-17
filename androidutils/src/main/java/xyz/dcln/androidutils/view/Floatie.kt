@@ -164,7 +164,7 @@ class Floatie private constructor(
         this.onPermissionException = callback
     }
 
-    fun setAnimationStyle(animationStyle: Int = R.style.CustomPopWindowStyle) =
+    fun setAnimationStyle(animationStyle: Int = R.style.FloatieCustomPopWindowStyle) =
         apply { mLayoutParams.windowAnimations = animationStyle }
 
 
