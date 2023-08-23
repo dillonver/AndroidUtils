@@ -3,6 +3,7 @@ package xyz.dcln.androidutils.utils.ext
 import android.text.InputType
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import androidx.core.widget.doOnTextChanged
 import xyz.dcln.androidutils.utils.LogUtils
 
 
@@ -78,3 +79,25 @@ fun EditText.setImeAction(
         }
     }
 }
+
+
+fun EditText.limitInput(
+    validator: (CharSequence?) -> Boolean,
+    maxLength: Int = -1,
+    onFailure: (CharSequence?) -> Unit
+) {
+    // 清空目前的文本
+    this.text.clear()
+    // 记录上一次的文本，用于验证失败时恢复
+    var lastValidText = text.toString()
+
+    doOnTextChanged { changedText, _, _, _ ->
+        if ((!validator(changedText)) || (maxLength > -1 && lastValidText.length >= maxLength)) {
+            onFailure(changedText)
+            this.setText(lastValidText)
+        } else {
+            lastValidText = text.toString()
+        }
+    }
+}
+
