@@ -83,43 +83,70 @@ fun EditText.setImeAction(
 }
 
 
-// 使用WeakHashMap为每个EditText与其关联的TextWatcher创建关联
+// Validators for different input patterns
+private val alphanumericValidator = { input: CharSequence? ->
+    input?.matches(Regex("^[a-zA-Z0-9]*$")) ?: false
+}
+
+private val alphabeticValidator = { input: CharSequence? ->
+    input?.matches(Regex("^[a-zA-Z]*$")) ?: false
+}
+
+private val numericValidator = { input: CharSequence? ->
+    input?.matches(Regex("^[0-9]*$")) ?: false
+}
+
+// Map to associate each EditText with its corresponding TextWatcher
 private val textWatcherMap = WeakHashMap<EditText, TextWatcher>()
+
+/**
+ * Limit the input of the EditText based on the given validator function.
+ * @param validator The function to validate the input.
+ * @param maxLength Maximum allowed length for the input. Defaults to -1, indicating no limit.
+ * @param onInvalidInput Callback function to handle invalid input.
+ */
 fun EditText.limitInput(
     validator: (CharSequence?) -> Boolean,
     maxLength: Int = -1,
-    onFailure: (CharSequence?) -> Unit
+    onInvalidInput: ((CharSequence?) -> Unit)? = null
 ) {
-    // 如果存在，移除当前的TextWatcher
+    // Remove the current TextWatcher if it exists
     textWatcherMap[this]?.let { this.removeTextChangedListener(it) }
 
-    // 清空目前的文本
+    // Clear the current text
     this.text.clear()
-    // 记录上一次的文本，用于验证失败时恢复
+
+    // Store the last valid text for potential restoration upon validation failure
     var lastValidText = text.toString()
 
-
-    val watcher = this.doOnTextChanged { changedText, _, _, count ->
-        // 如果文本为空，直接视为有效
-        if (changedText.isNullOrEmpty()) {
-            lastValidText = ""
-            return@doOnTextChanged
-        }
-        val errorChars = if (changedText.length >= lastValidText.length) {
-            changedText.substring(lastValidText.length)
-        } else {
-            lastValidText[changedText.length].toString()
-        }
-
-        if (!validator(changedText) || (maxLength > -1 && lastValidText.length >= maxLength)) {
-            onFailure(errorChars)
-            this.setText(lastValidText)
-            this.setSelection(lastValidText.length)  // 移动光标到文本末尾
-        } else {
+    val watcher = this.doOnTextChanged { changedText, _, _, _ ->
+        if (changedText.isNullOrEmpty() || validator(changedText) && (maxLength == -1 || changedText.length <= maxLength)) {
             lastValidText = text.toString()
+        } else {
+            onInvalidInput?.invoke(changedText)
+            this.setText(lastValidText)
+            this.setSelection(lastValidText.length)  // Move the cursor to the end of the text
         }
     }
 
-    // 在map中存储TextWatcher
+    // Store the TextWatcher in the map
     textWatcherMap[this] = watcher
 }
+
+/** Limit the input to alphanumeric characters. */
+fun EditText.limitToAlphanumeric(
+    maxLength: Int = -1,
+    onInvalidInput: ((CharSequence?) -> Unit)? = null
+) = limitInput(alphanumericValidator, maxLength, onInvalidInput)
+
+/** Limit the input to alphabetic characters. */
+fun EditText.limitToAlphabetic(
+    maxLength: Int = -1,
+    onInvalidInput: ((CharSequence?) -> Unit)? = null
+) = limitInput(alphabeticValidator, maxLength, onInvalidInput)
+
+/** Limit the input to numeric characters. */
+fun EditText.limitToNumeric(
+    maxLength: Int = -1,
+    onInvalidInput: ((CharSequence?) -> Unit)? = null
+) = limitInput(numericValidator, maxLength, onInvalidInput)
