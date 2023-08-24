@@ -1,10 +1,12 @@
 package xyz.dcln.androidutils.utils.ext
 
 import android.text.InputType
+import android.text.TextWatcher
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import androidx.core.widget.doOnTextChanged
 import xyz.dcln.androidutils.utils.LogUtils
+import java.util.WeakHashMap
 
 
 /**
@@ -81,23 +83,43 @@ fun EditText.setImeAction(
 }
 
 
+// 使用WeakHashMap为每个EditText与其关联的TextWatcher创建关联
+private val textWatcherMap = WeakHashMap<EditText, TextWatcher>()
 fun EditText.limitInput(
     validator: (CharSequence?) -> Boolean,
     maxLength: Int = -1,
     onFailure: (CharSequence?) -> Unit
 ) {
+    // 如果存在，移除当前的TextWatcher
+    textWatcherMap[this]?.let { this.removeTextChangedListener(it) }
+
     // 清空目前的文本
     this.text.clear()
     // 记录上一次的文本，用于验证失败时恢复
     var lastValidText = text.toString()
 
-    doOnTextChanged { changedText, _, _, _ ->
-        if ((!validator(changedText)) || (maxLength > -1 && lastValidText.length >= maxLength)) {
-            onFailure(changedText)
+
+    val watcher = this.doOnTextChanged { changedText, _, _, count ->
+        // 如果文本为空，直接视为有效
+        if (changedText.isNullOrEmpty()) {
+            lastValidText = ""
+            return@doOnTextChanged
+        }
+        val errorChars = if (changedText.length >= lastValidText.length) {
+            changedText.substring(lastValidText.length)
+        } else {
+            lastValidText[changedText.length].toString()
+        }
+
+        if (!validator(changedText) || (maxLength > -1 && lastValidText.length >= maxLength)) {
+            onFailure(errorChars)
             this.setText(lastValidText)
+            this.setSelection(lastValidText.length)  // 移动光标到文本末尾
         } else {
             lastValidText = text.toString()
         }
     }
-}
 
+    // 在map中存储TextWatcher
+    textWatcherMap[this] = watcher
+}
