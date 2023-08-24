@@ -96,6 +96,10 @@ private val numericValidator = { input: CharSequence? ->
     input?.matches(Regex("^[0-9]*$")) ?: false
 }
 
+private val alphanumericWithSymbolsValidator = { input: CharSequence? ->
+    input?.matches(Regex("^[a-zA-Z0-9!@#$%^&*()_\\-+=\\[\\]{}|;:'\",.<>?/]*$")) ?: false
+}
+
 // Map to associate each EditText with its corresponding TextWatcher
 private val textWatcherMap = WeakHashMap<EditText, TextWatcher>()
 
@@ -150,3 +154,9 @@ fun EditText.limitToNumeric(
     maxLength: Int = -1,
     onInvalidInput: ((CharSequence?) -> Unit)? = null
 ) = limitInput(numericValidator, maxLength, onInvalidInput)
+
+/** Limit the input to alphanumeric characters with common symbols. */
+fun EditText.limitToAlphanumericWithSymbols(
+    maxLength: Int = -1,
+    onInvalidInput: ((CharSequence?) -> Unit)? = null
+) = limitInput(alphanumericWithSymbolsValidator, maxLength, onInvalidInput)
