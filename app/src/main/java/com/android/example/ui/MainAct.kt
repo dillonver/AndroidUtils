@@ -14,6 +14,7 @@ import com.android.example.ui.test.NetworkUtilsTestAct
 import com.android.example.ui.test.PermissionUtilsActivity
 import com.android.example.ui.test.RegexUtilsTestAct
 import com.android.example.ui.test.WifiTransferActivity
+import com.android.example.ui.test.WifiUtilsTestAct
 import xyz.dcln.androidutils.utils.ActivityUtils
 
 
@@ -64,6 +65,10 @@ class MainAct : BaseBindingActivity<ActivityMainBinding>() {
         }
         viewBinding.tvPermissionUtils.setOnClickListener {
             ActivityUtils.startActivity<PermissionUtilsActivity>()
+        }
+
+        viewBinding.tvWifiUtilsTest.setOnClickListener {
+            ActivityUtils.startActivity<WifiUtilsTestAct>()
         }
     }
 
