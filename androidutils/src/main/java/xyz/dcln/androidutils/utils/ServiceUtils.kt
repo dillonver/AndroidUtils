@@ -5,7 +5,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.os.Build
 
 object ServiceUtils {
 
@@ -34,8 +33,13 @@ object ServiceUtils {
      * @param serviceClass 要启动的服务的类。
      */
     fun startService(context: Context, serviceClass: Class<*>) {
-        val intent = Intent(context, serviceClass)
-        context.startService(intent)
+        try {
+            val intent = Intent(context, serviceClass)
+            context.startService(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
     }
 
     /**
@@ -46,8 +50,14 @@ object ServiceUtils {
      * @return 如果成功停止服务，则返回 true；否则返回 false。
      */
     fun stopService(context: Context, serviceClass: Class<*>): Boolean {
-        val intent = Intent(context, serviceClass)
-        return context.stopService(intent)
+        return try {
+            val intent = Intent(context, serviceClass)
+            context.stopService(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+
     }
 
     /**
@@ -59,7 +69,12 @@ object ServiceUtils {
      * @param flags 绑定标志位。
      * @return 如果成功绑定服务，则返回 true；否则返回 false。
      */
-    fun bindService(context: Context, serviceClass: Class<*>, connection: ServiceConnection, flags: Int): Boolean {
+    fun bindService(
+        context: Context,
+        serviceClass: Class<*>,
+        connection: ServiceConnection,
+        flags: Int
+    ): Boolean {
         val intent = Intent(context, serviceClass)
         return context.bindService(intent, connection, flags)
     }
@@ -85,7 +100,8 @@ object ServiceUtils {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val services = activityManager.getRunningServices(Int.MAX_VALUE)
         for (service in services) {
-            val componentName = ComponentName(service.service.packageName, service.service.className)
+            val componentName =
+                ComponentName(service.service.packageName, service.service.className)
             if (componentName == ComponentName(context, serviceClass)) {
                 return true
             }
