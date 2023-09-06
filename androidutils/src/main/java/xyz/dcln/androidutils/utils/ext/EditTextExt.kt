@@ -1,9 +1,12 @@
 package xyz.dcln.androidutils.utils.ext
 
 import android.text.InputType
+import android.text.TextWatcher
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import androidx.core.widget.doOnTextChanged
 import xyz.dcln.androidutils.utils.LogUtils
+import java.util.WeakHashMap
 
 
 /**
@@ -78,3 +81,82 @@ fun EditText.setImeAction(
         }
     }
 }
+
+
+// Validators for different input patterns
+private val alphanumericValidator = { input: CharSequence? ->
+    input?.matches(Regex("^[a-zA-Z0-9]*$")) ?: false
+}
+
+private val alphabeticValidator = { input: CharSequence? ->
+    input?.matches(Regex("^[a-zA-Z]*$")) ?: false
+}
+
+private val numericValidator = { input: CharSequence? ->
+    input?.matches(Regex("^[0-9]*$")) ?: false
+}
+
+private val alphanumericWithSymbolsValidator = { input: CharSequence? ->
+    input?.matches(Regex("^[a-zA-Z0-9!@#$%^&*()_\\-+=\\[\\]{}|;:'\",.<>?/]*$")) ?: false
+}
+
+// Map to associate each EditText with its corresponding TextWatcher
+private val textWatcherMap = WeakHashMap<EditText, TextWatcher>()
+
+/**
+ * Limit the input of the EditText based on the given validator function.
+ * @param validator The function to validate the input.
+ * @param maxLength Maximum allowed length for the input. Defaults to -1, indicating no limit.
+ * @param onInvalidInput Callback function to handle invalid input.
+ */
+fun EditText.limitInput(
+    validator: (CharSequence?) -> Boolean,
+    maxLength: Int = -1,
+    onInvalidInput: ((CharSequence?) -> Unit)? = null
+) {
+    // Remove the current TextWatcher if it exists
+    textWatcherMap[this]?.let { this.removeTextChangedListener(it) }
+
+    // Clear the current text
+    this.text.clear()
+
+    // Store the last valid text for potential restoration upon validation failure
+    var lastValidText = text.toString()
+
+    val watcher = this.doOnTextChanged { changedText, _, _, _ ->
+        if (changedText.isNullOrEmpty() || validator(changedText) && (maxLength == -1 || changedText.length <= maxLength)) {
+            lastValidText = text.toString()
+        } else {
+            onInvalidInput?.invoke(changedText)
+            this.setText(lastValidText)
+            this.setSelection(lastValidText.length)  // Move the cursor to the end of the text
+        }
+    }
+
+    // Store the TextWatcher in the map
+    textWatcherMap[this] = watcher
+}
+
+/** Limit the input to alphanumeric characters. */
+fun EditText.limitToAlphanumeric(
+    maxLength: Int = -1,
+    onInvalidInput: ((CharSequence?) -> Unit)? = null
+) = limitInput(alphanumericValidator, maxLength, onInvalidInput)
+
+/** Limit the input to alphabetic characters. */
+fun EditText.limitToAlphabetic(
+    maxLength: Int = -1,
+    onInvalidInput: ((CharSequence?) -> Unit)? = null
+) = limitInput(alphabeticValidator, maxLength, onInvalidInput)
+
+/** Limit the input to numeric characters. */
+fun EditText.limitToNumeric(
+    maxLength: Int = -1,
+    onInvalidInput: ((CharSequence?) -> Unit)? = null
+) = limitInput(numericValidator, maxLength, onInvalidInput)
+
+/** Limit the input to alphanumeric characters with common symbols. */
+fun EditText.limitToAlphanumericWithSymbols(
+    maxLength: Int = -1,
+    onInvalidInput: ((CharSequence?) -> Unit)? = null
+) = limitInput(alphanumericWithSymbolsValidator, maxLength, onInvalidInput)

@@ -2,10 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
     <application
         android:name="com.android.example.base.BaseApp"
@@ -43,6 +45,10 @@
         <activity android:name="com.android.example.ui.test.RegexUtilsTestAct" />
         <activity android:name="com.android.example.ui.test.KeyboardUtilsTestAct" />
         <activity android:name="com.android.example.ui.test.PermissionUtilsActivity" />
+        <activity
+            android:name="com.android.example.ui.test.FloatieTestActivity"
+            android:launchMode="singleTop" />
+        <activity android:name="com.android.example.ui.test.WifiUtilsTestAct" />
 
         <provider
             android:name="xyz.dcln.androidutils.AndroidUtils$InitProvider"
