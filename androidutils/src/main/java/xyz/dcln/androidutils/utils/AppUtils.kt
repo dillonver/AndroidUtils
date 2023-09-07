@@ -16,7 +16,6 @@ import android.os.Build
 import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
-import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -320,24 +319,69 @@ object AppUtils {
     /**
      * Launch the app.
      */
-    fun launchApp() {
-        val launchIntent =
-            getAppContext().packageManager.getLaunchIntentForPackage(getAppContext().packageName)
-        launchIntent?.flags =
-            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-        getAppContext().startActivity(launchIntent)
+    fun launchApp(packageName: String?) {
+        if (packageName.isNullOrBlank()) {
+            LogUtils.e("packageName.isNullOrBlank")
+            return
+        }
+        val intent = getAppContext().packageManager.getLaunchIntentForPackage(packageName)
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            getAppContext().startActivity(intent)
+        } else {
+            // APP没有安装或无法启动
+            LogUtils.e("APP没有安装或无法启动")
+        }
     }
+
 
     /**
      * Relaunch the app.
      */
+
     @RequiresPermission(Manifest.permission.KILL_BACKGROUND_PROCESSES)
-    fun relaunchApp() {
-        val intent =
-            getAppContext().packageManager.getLaunchIntentForPackage(getAppContext().packageName)
-        val restartIntent = Intent.makeRestartActivityTask(intent?.component)
-        getAppContext().startActivity(restartIntent)
-        exitApp()
+    fun relaunchApp(targetPackageName: String) {
+        val context = getAppContext()
+        val currentPackageName = context.packageName
+
+        if (currentPackageName == targetPackageName) {
+            // 重启自身
+            relaunchSelf()
+        } else {
+            // 重启其他APP
+            relaunchOtherApp(targetPackageName)
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.KILL_BACKGROUND_PROCESSES)
+    fun relaunchSelf() {
+        val context = getAppContext()
+        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+        if (intent != null) {
+            val restartIntent = Intent.makeRestartActivityTask(intent.component)
+            context.startActivity(restartIntent)
+            exitApp() // 你的方法来关闭当前应用
+        } else {
+            LogUtils.e("无法重新启动应用程序")
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.KILL_BACKGROUND_PROCESSES)
+    fun relaunchOtherApp(packageName: String) {
+        val context = getAppContext()
+
+        // 停止其他应用（需要KILL_BACKGROUND_PROCESSES权限）
+        val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        am.killBackgroundProcesses(packageName)
+
+        // 重新启动其他应用
+        val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        } else {
+            LogUtils.e("无法获取$packageName 的启动Intent")
+        }
     }
 
 
