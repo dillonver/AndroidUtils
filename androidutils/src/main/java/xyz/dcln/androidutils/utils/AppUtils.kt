@@ -171,11 +171,13 @@ object AppUtils {
      * @param packageName The package name of the app.
      */
     fun uninstallApp(packageName: String) {
-        val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE)
-        intent.data = "package:$packageName".toUri()
-        intent.putExtra(Intent.EXTRA_RETURN_RESULT, true)
+        val uri = Uri.fromParts("package", packageName, null)
+        val intent = Intent(Intent.ACTION_DELETE) // Use ACTION_DELETE as an alternative
+        intent.data = uri
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK // Start in a new task
         getAppContext().startActivity(intent)
     }
+
 
     /**
      * Determine whether an app is installed.
