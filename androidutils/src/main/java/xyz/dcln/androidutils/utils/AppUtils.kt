@@ -360,7 +360,7 @@ object AppUtils {
         if (intent != null) {
             val restartIntent = Intent.makeRestartActivityTask(intent.component)
             context.startActivity(restartIntent)
-            exitApp() // 你的方法来关闭当前应用
+            exitApp()
         } else {
             LogUtils.e("无法重新启动应用程序")
         }
