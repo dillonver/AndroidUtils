@@ -6,6 +6,7 @@ import android.app.AppOpsManager
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.VpnService
 import android.os.Build
@@ -477,5 +478,31 @@ object PermissionUtils {
             onGranted = onGranted,
             onDenied = onDenied
         )
+    }
+
+
+    /**
+     * 获取指定APP的权限列表。
+     *
+     * @param packageName APP的包名。
+     * @return 一个包含所有请求权限的列表，如果没有找到该应用，则返回null。
+     */
+    fun getAppPermissions(packageName: String?): List<String>? {
+        if (packageName.isNullOrBlank()) return null
+        // 获取PackageManager以获取应用的信息
+        val packageManager = AppUtils.getApp().packageManager
+
+        return try {
+            // 获取与权限相关的PackageInfo
+            val packageInfo =
+                packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
+
+            // 获取应用请求的权限数组并将其转换为列表
+            val permissions = packageInfo.requestedPermissions
+            permissions?.toList()
+        } catch (e: PackageManager.NameNotFoundException) {
+            // 如果没有找到指定的APP，返回null
+            null
+        }
     }
 }
