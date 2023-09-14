@@ -84,7 +84,7 @@ object PermissionUtils {
         onDeniedPermanently: (() -> Unit)? = null,
         launchSettingsOnDeniedPermanently: Boolean = false
     ) {
-        if (activity !is AppCompatActivity) {
+        if (!ActivityUtils.isActivityValid(activity) || activity !is AppCompatActivity) {
             logE("Error: activity !is AppCompatActivity")
             return
         }
@@ -141,7 +141,7 @@ object PermissionUtils {
         onDeniedPermanently: ((List<String>) -> Unit)? = null,
         launchSettingsOnDeniedPermanently: Boolean = false
     ) {
-        if (activity !is AppCompatActivity) {
+        if (!ActivityUtils.isActivityValid(activity) || activity !is AppCompatActivity) {
             logE("Error: activity !is AppCompatActivity")
             return
         }
@@ -196,7 +196,7 @@ object PermissionUtils {
         onGranted: (() -> Unit)? = null,
         onDenied: (() -> Unit)? = null
     ) {
-        if (activity !is AppCompatActivity) {
+        if (!ActivityUtils.isActivityValid(activity) || activity !is AppCompatActivity) {
             logE("Error: activity !is AppCompatActivity")
             return
         }
@@ -210,7 +210,6 @@ object PermissionUtils {
             onDenied
         )
     }
-
 
 
     fun isGrantedCanDrawOverlaysPermission() = Settings.canDrawOverlays(AppUtils.getAppContext())
