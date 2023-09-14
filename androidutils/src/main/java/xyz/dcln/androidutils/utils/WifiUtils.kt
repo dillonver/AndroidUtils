@@ -42,14 +42,12 @@ object WifiUtils {
         return wifiManager?.isWifiEnabled == true
     }
 
-    @RequiresPermission(anyOf = [permission.CHANGE_WIFI_STATE ])
-    fun setWifiEnabled(context: Context, enabled: Boolean, onWifiStateChanged: ((Boolean) -> Unit)? = null) {
+    @RequiresPermission(anyOf = [permission.CHANGE_WIFI_STATE])
+    fun setWifiEnabled(
+        context: Context,
+        enabled: Boolean
+    ) {
         val wifiManager = getWifiManager(context)
-
-        // If callback is provided, register the receiver
-        if (onWifiStateChanged != null) {
-            registerWifiStateReceiver(context, onWifiStateChanged)
-        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             // Open system UI for the user to enable/disable Wi-Fi
@@ -60,9 +58,15 @@ object WifiUtils {
             @Suppress("DEPRECATION")
             wifiManager?.isWifiEnabled = enabled
         }
-
-
     }
+
+    fun observeWifiStateChanged(context: Context, onWifiStateChanged: ((Boolean) -> Unit)? = null) {
+        // If callback is provided, register the receiver
+        if (onWifiStateChanged != null) {
+            registerWifiStateReceiver(context, onWifiStateChanged)
+        }
+    }
+
 
     private fun registerWifiStateReceiver(context: Context, listener: (Boolean) -> Unit) {
         unregisterWifiStateReceiver(context)  // First, ensure any previous receiver is unregistered
@@ -71,10 +75,14 @@ object WifiUtils {
 
         wifiStateReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                when (intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, WifiManager.WIFI_STATE_UNKNOWN)) {
+                when (intent.getIntExtra(
+                    WifiManager.EXTRA_WIFI_STATE,
+                    WifiManager.WIFI_STATE_UNKNOWN
+                )) {
                     WifiManager.WIFI_STATE_ENABLED -> {
                         wifiStateChangeListener?.invoke(true)
                     }
+
                     WifiManager.WIFI_STATE_DISABLED -> {
                         wifiStateChangeListener?.invoke(false)
                     }
@@ -220,7 +228,6 @@ object WifiUtils {
             onResult(isTargetWifiInRange)
         }, onError)
     }
-
 
 
     /**

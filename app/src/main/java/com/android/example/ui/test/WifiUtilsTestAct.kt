@@ -23,13 +23,14 @@ class WifiUtilsTestAct : BaseBindingActivity<ActivityTestBinding>() {
             LogUtils.i(WifiUtils.isWifiEnabled(this))
 //            "BSSID":"68:77:24:cc:7d:9e","SSID":"HBY-5G"
 //            "BSSID":"28:93:7d:36:a9:04","SSID":"HBY"
+       //     "a4:39:b3:75:c7:01" home
         }
 
-//        viewBinding.tvTest2.setOnClickListener {
-//            WifiUtils.setWifiEnabled(this, !WifiUtils.isWifiEnabled(this))
-//        }
-
         viewBinding.tvTest2.setOnClickListener {
+            WifiUtils.setWifiEnabled(this, !WifiUtils.isWifiEnabled(this))
+        }
+
+        viewBinding.tvTest1.setOnClickListener {
             requestMultiPermissions(
                 Manifest.permission.ACCESS_WIFI_STATE,
                 Manifest.permission.ACCESS_FINE_LOCATION,
