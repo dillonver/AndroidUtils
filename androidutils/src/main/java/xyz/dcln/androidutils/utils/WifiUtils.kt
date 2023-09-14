@@ -29,6 +29,10 @@ object WifiUtils {
 
     private var wifiScanReceiver: BroadcastReceiver? = null
 
+    private var wifiStateReceiver: BroadcastReceiver? = null
+
+    private var wifiStateChangeListener: ((Boolean) -> Unit)? = null
+
     private fun getWifiManager(context: Context): WifiManager? {
         return context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
     }
@@ -38,8 +42,15 @@ object WifiUtils {
         return wifiManager?.isWifiEnabled == true
     }
 
-    fun setWifiEnabled(context: Context, enabled: Boolean) {
+    @RequiresPermission(anyOf = [permission.CHANGE_WIFI_STATE ])
+    fun setWifiEnabled(context: Context, enabled: Boolean, onWifiStateChanged: ((Boolean) -> Unit)? = null) {
         val wifiManager = getWifiManager(context)
+
+        // If callback is provided, register the receiver
+        if (onWifiStateChanged != null) {
+            registerWifiStateReceiver(context, onWifiStateChanged)
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             // Open system UI for the user to enable/disable Wi-Fi
             context.startActivity(Intent(Settings.Panel.ACTION_WIFI).apply {
@@ -49,7 +60,58 @@ object WifiUtils {
             @Suppress("DEPRECATION")
             wifiManager?.isWifiEnabled = enabled
         }
+
+
     }
+
+    private fun registerWifiStateReceiver(context: Context, listener: (Boolean) -> Unit) {
+        unregisterWifiStateReceiver(context)  // First, ensure any previous receiver is unregistered
+
+        wifiStateChangeListener = listener
+
+        wifiStateReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                when (intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, WifiManager.WIFI_STATE_UNKNOWN)) {
+                    WifiManager.WIFI_STATE_ENABLED -> {
+                        wifiStateChangeListener?.invoke(true)
+                    }
+                    WifiManager.WIFI_STATE_DISABLED -> {
+                        wifiStateChangeListener?.invoke(false)
+                    }
+                    // Other states can be handled if needed
+                }
+            }
+        }
+
+        val intentFilter = IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION)
+        context.registerReceiver(wifiStateReceiver, intentFilter)
+
+        // If context is a LifecycleOwner, observe its lifecycle to unregister the receiver automatically
+        if (context is LifecycleOwner) {
+            context.lifecycle.addObserver(object : LifecycleEventObserver {
+                override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+                    when (event) {
+                        Lifecycle.Event.ON_DESTROY -> {
+                            unregisterWifiStateReceiver(context)
+                            context.lifecycle.removeObserver(this)
+                        }
+
+                        else -> {
+                        }
+                    }
+                }
+            })
+        }
+    }
+
+    fun unregisterWifiStateReceiver(context: Context) {
+        if (wifiStateReceiver != null) {
+            context.unregisterReceiver(wifiStateReceiver)
+            wifiStateReceiver = null
+            wifiStateChangeListener = null
+        }
+    }
+
 
     @RequiresPermission(anyOf = [permission.ACCESS_WIFI_STATE, permission.ACCESS_FINE_LOCATION])
     fun requestWifiScan(
