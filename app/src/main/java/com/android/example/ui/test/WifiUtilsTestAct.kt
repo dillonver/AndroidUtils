@@ -28,6 +28,9 @@ class WifiUtilsTestAct : BaseBindingActivity<ActivityTestBinding>() {
 
         viewBinding.tvTest2.setOnClickListener {
             WifiUtils.setWifiEnabled(this, !WifiUtils.isWifiEnabled(this))
+            WifiUtils.observeWifiStateChanged(this){wifiEnable ->  
+                
+            }
         }
 
         viewBinding.tvTest1.setOnClickListener {

@@ -60,7 +60,7 @@ object WifiUtils {
         }
     }
 
-    fun observeWifiStateChanged(context: Context, onWifiStateChanged: ((Boolean) -> Unit)? = null) {
+    fun observeWifiStateChanged(context: Context, onWifiStateChanged: ((wifiEnable:Boolean) -> Unit)? = null) {
         // If callback is provided, register the receiver
         if (onWifiStateChanged != null) {
             registerWifiStateReceiver(context, onWifiStateChanged)
