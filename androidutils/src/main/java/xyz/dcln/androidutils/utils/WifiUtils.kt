@@ -197,26 +197,30 @@ object WifiUtils {
     fun isWithinWifiRange(
         context: Context,
         bssidTarget: String,
-        ssidTarget: String? = null,
         onResult: (result: Boolean) -> Unit,
         onError: (reason: String?) -> Unit
     ) {
         requestWifiScan(context, { scanResults ->
-            val isTargetWifiInRange = scanResults?.any {
-                val ssidMatch = if (ssidTarget == null) true else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        it.wifiSsid.toString().trim('\"') == ssidTarget
-                    } else {
-                        @Suppress("DEPRECATION")
-                        it.SSID == ssidTarget
-                    }
-                }
-                val bssidMatch = it.BSSID == bssidTarget
-                ssidMatch && bssidMatch
+            val isTargetWifiInRange = scanResults?.any { it.BSSID == bssidTarget } == true
+            onResult(isTargetWifiInRange)
+        }, onError)
+    }
+
+    @RequiresPermission(anyOf = [permission.ACCESS_WIFI_STATE, permission.ACCESS_FINE_LOCATION])
+    fun isWithinWifiRange(
+        context: Context,
+        bssidTargets: List<String>,
+        onResult: (result: Boolean) -> Unit,
+        onError: (reason: String?) -> Unit
+    ) {
+        requestWifiScan(context, { scanResults ->
+            val isTargetWifiInRange = scanResults?.any { scanResult ->
+                bssidTargets.contains(scanResult.BSSID)
             } == true
             onResult(isTargetWifiInRange)
         }, onError)
     }
+
 
 
     /**
