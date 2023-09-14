@@ -2,6 +2,7 @@ package xyz.dcln.androidutils.utils
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AppOpsManager
 import android.app.NotificationManager
 import android.content.Context
@@ -17,6 +18,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
+import xyz.dcln.androidutils.utils.LogUtils.logE
 import xyz.dcln.androidutils.utils.permisson.PermissionBase
 
 
@@ -74,6 +76,28 @@ object PermissionUtils {
         )
     }
 
+    fun requestSinglePermission(
+        activity: Activity,
+        permission: String,
+        onGranted: (() -> Unit)? = null,
+        onDenied: (() -> Unit)? = null,
+        onDeniedPermanently: (() -> Unit)? = null,
+        launchSettingsOnDeniedPermanently: Boolean = false
+    ) {
+        if (activity !is AppCompatActivity) {
+            logE("Error: activity !is AppCompatActivity")
+            return
+        }
+        PermissionBase.requestSinglePermission(
+            activity,
+            permission,
+            onGranted,
+            onDenied,
+            onDeniedPermanently,
+            launchSettingsOnDeniedPermanently
+        )
+    }
+
 
     /**
      * Request multiple permissions from the user.
@@ -106,6 +130,34 @@ object PermissionUtils {
         )
     }
 
+
+    fun requestMultiPermissions(
+        activity: Activity,
+        vararg permissions: String,
+        onAllGranted: (() -> Unit)? = null,
+        onAllDenied: (() -> Unit)? = null,
+        onPartialGranted: ((List<String>) -> Unit)? = null,
+        onPartialDenied: ((List<String>) -> Unit)? = null,
+        onDeniedPermanently: ((List<String>) -> Unit)? = null,
+        launchSettingsOnDeniedPermanently: Boolean = false
+    ) {
+        if (activity !is AppCompatActivity) {
+            logE("Error: activity !is AppCompatActivity")
+            return
+        }
+        PermissionBase.requestMultiPermissions(
+            activity,
+            permissions,
+            onAllGranted,
+            onAllDenied,
+            onPartialGranted,
+            onPartialDenied,
+            onDeniedPermanently,
+            launchSettingsOnDeniedPermanently
+        )
+    }
+
+
     /**
      *Requests a special permission that requires a custom intent to launch.
      *@param permissionCheck A function to check if the permission has already been granted.
@@ -134,6 +186,31 @@ object PermissionUtils {
             onDenied
         )
     }
+
+    fun requestSpecialPermission(
+        activity: Activity,
+        permissionCheck: () -> Boolean,
+        permissionIntent: () -> Intent,
+        autoReturn: Boolean = true,
+        autoReturnSeconds: Long = 60,
+        onGranted: (() -> Unit)? = null,
+        onDenied: (() -> Unit)? = null
+    ) {
+        if (activity !is AppCompatActivity) {
+            logE("Error: activity !is AppCompatActivity")
+            return
+        }
+        PermissionBase.requestSpecialPermission(
+            activity,
+            permissionCheck,
+            permissionIntent,
+            autoReturn,
+            autoReturnSeconds,
+            onGranted,
+            onDenied
+        )
+    }
+
 
 
     fun isGrantedCanDrawOverlaysPermission() = Settings.canDrawOverlays(AppUtils.getAppContext())
