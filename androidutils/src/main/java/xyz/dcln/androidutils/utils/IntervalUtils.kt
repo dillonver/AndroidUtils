@@ -39,8 +39,8 @@ object IntervalUtils {
         unit: TimeUnit,
         start: Long = 0,
         initialDelay: Long = 0,
-        onTick: ((IntervalController, Long) -> Unit)? = null,
-        onFinish: ((Long) -> Unit)? = null,
+        onTick: ((controller: IntervalController, count: Long) -> Unit)? = null,
+        onFinish: ((remain: Long) -> Unit)? = null,
     ): IntervalController {
         return IntervalController(end, period, unit, start, initialDelay, onTick, onFinish)
     }
@@ -63,8 +63,8 @@ object IntervalUtils {
         unit: TimeUnit,
         start: Long = 0,
         initialDelay: Long = 0,
-        onTick: ((IntervalController, Long) -> Unit)? = null,
-        onFinish: ((Long) -> Unit)? = null,
+        onTick: ((controller: IntervalController, count: Long) -> Unit)? = null,
+        onFinish: ((remain: Long) -> Unit)? = null,
         lifecycleOwner: LifecycleOwner? = null
     ) {
         val interval = create(end, period, unit, start, initialDelay, onTick, onFinish)
@@ -89,8 +89,8 @@ object IntervalUtils {
         private val unit: TimeUnit,
         val start: Long,
         private val initialDelay: Long,
-        private val onTick: ((IntervalController, Long) -> Unit)? = null,
-        private val onFinish: ((Long) -> Unit)? = null
+        private val onTick: ((controller: IntervalController, count: Long) -> Unit)? = null,
+        private val onFinish: ((remain: Long) -> Unit)? = null
     ) : Serializable, Closeable {
         private var countTime = 0L
         private var delay = 0L
@@ -258,8 +258,8 @@ object IntervalUtils {
         unit: TimeUnit,
         start: Long = 0,
         initialDelay: Long = 0,
-        onTick: ((interval: IntervalController, count: Long) -> Unit)? = null,
-        onFinish: ((count: Long) -> Unit)? = null
+        onTick: ((controller: IntervalController, count: Long) -> Unit)? = null,
+        onFinish: ((remain: Long) -> Unit)? = null,
     ) {
         create(end, period, unit, start, initialDelay, onTick, onFinish).life(this).start()
     }
