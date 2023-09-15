@@ -40,7 +40,7 @@ object IntervalUtils {
         start: Long = 0,
         initialDelay: Long = 0,
         onTick: ((controller: IntervalController, count: Long) -> Unit)? = null,
-        onFinish: ((remain: Long) -> Unit)? = null,
+        onFinish: ((count: Long) -> Unit)? = null,
     ): IntervalController {
         return IntervalController(end, period, unit, start, initialDelay, onTick, onFinish)
     }
@@ -64,7 +64,7 @@ object IntervalUtils {
         start: Long = 0,
         initialDelay: Long = 0,
         onTick: ((controller: IntervalController, count: Long) -> Unit)? = null,
-        onFinish: ((remain: Long) -> Unit)? = null,
+        onFinish: ((count: Long) -> Unit)? = null,
         lifecycleOwner: LifecycleOwner? = null
     ) {
         val interval = create(end, period, unit, start, initialDelay, onTick, onFinish)
@@ -90,7 +90,7 @@ object IntervalUtils {
         val start: Long,
         private val initialDelay: Long,
         private val onTick: ((controller: IntervalController, count: Long) -> Unit)? = null,
-        private val onFinish: ((remain: Long) -> Unit)? = null
+        private val onFinish: ((count: Long) -> Unit)? = null
     ) : Serializable, Closeable {
         private var countTime = 0L
         private var delay = 0L
@@ -259,7 +259,7 @@ object IntervalUtils {
         start: Long = 0,
         initialDelay: Long = 0,
         onTick: ((controller: IntervalController, count: Long) -> Unit)? = null,
-        onFinish: ((remain: Long) -> Unit)? = null,
+        onFinish: ((count: Long) -> Unit)? = null,
     ) {
         create(end, period, unit, start, initialDelay, onTick, onFinish).life(this).start()
     }
