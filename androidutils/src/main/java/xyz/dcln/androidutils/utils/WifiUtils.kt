@@ -196,7 +196,6 @@ object WifiUtils {
      *
      * @param context Android context.
      * @param bssidTarget The target BSSID to check against. Note: This might not be the physical MAC of the router.
-     * @param ssidTarget (Optional) The target SSID to check against. If not provided, only BSSID is used for verification.
      * @param onResult Callback that returns `true` if the target Wi-Fi is in range, `false` otherwise.
      * @param onError Callback for handling errors, returns an error reason string.
      */
