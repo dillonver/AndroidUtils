@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import xyz.dcln.androidutils.utils.LogUtils.logE
 
 object WifiUtils {
 
@@ -60,7 +61,10 @@ object WifiUtils {
         }
     }
 
-    fun observeWifiStateChanged(context: Context, onWifiStateChanged: ((wifiEnable:Boolean) -> Unit)? = null) {
+    fun observeWifiStateChanged(
+        context: Context,
+        onWifiStateChanged: ((wifiEnable: Boolean) -> Unit)? = null
+    ) {
         // If callback is provided, register the receiver
         if (onWifiStateChanged != null) {
             registerWifiStateReceiver(context, onWifiStateChanged)
@@ -124,7 +128,7 @@ object WifiUtils {
     @RequiresPermission(anyOf = [permission.ACCESS_WIFI_STATE, permission.ACCESS_FINE_LOCATION])
     fun requestWifiScan(
         context: Context,
-        onScanResultsAvailable: (List<ScanResult>?) -> Unit,
+        onScanResultsAvailable: (result: List<ScanResult>?, isLast: Boolean) -> Unit,
         onError: (reason: String?) -> Unit
     ) {
 
@@ -147,9 +151,10 @@ object WifiUtils {
                 override fun onReceive(c: Context, intent: Intent) {
                     if (intent.action == WifiManager.SCAN_RESULTS_AVAILABLE_ACTION) {
                         if (intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false)) {
-                            onScanResultsAvailable(wifiManager?.scanResults)
+                            onScanResultsAvailable(wifiManager?.scanResults, false)
                         } else {
-                            onError("limit")  // Handle rate limit exceeded or any other failure
+                            onScanResultsAvailable(wifiManager?.scanResults, true)
+                            logE("limit return least scanResults")  // Handle rate limit exceeded or any other failure
                         }
                     }
                 }
@@ -207,7 +212,7 @@ object WifiUtils {
         onResult: (result: Boolean) -> Unit,
         onError: (reason: String?) -> Unit
     ) {
-        requestWifiScan(context, { scanResults ->
+        requestWifiScan(context, { scanResults, _ ->
             val isTargetWifiInRange = scanResults?.any { it.BSSID == bssidTarget } == true
             onResult(isTargetWifiInRange)
         }, onError)
@@ -220,7 +225,7 @@ object WifiUtils {
         onResult: (result: Boolean) -> Unit,
         onError: (reason: String?) -> Unit
     ) {
-        requestWifiScan(context, { scanResults ->
+        requestWifiScan(context, { scanResults, _ ->
             val isTargetWifiInRange = scanResults?.any { scanResult ->
                 bssidTargets.contains(scanResult.BSSID)
             } == true
