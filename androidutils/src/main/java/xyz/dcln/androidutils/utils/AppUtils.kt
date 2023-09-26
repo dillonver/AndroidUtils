@@ -139,11 +139,22 @@ object AppUtils {
                     PackageManager.GET_SIGNATURES
                 }
             )
-            packageInfo.signatures
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                if (packageInfo.signingInfo.hasMultipleSigners()) {
+                    packageInfo.signingInfo.apkContentsSigners
+                } else {
+                    packageInfo.signingInfo.signingCertificateHistory
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                packageInfo.signatures
+            }
         } catch (e: PackageManager.NameNotFoundException) {
             null
         }
     }
+
 
 
     /**
