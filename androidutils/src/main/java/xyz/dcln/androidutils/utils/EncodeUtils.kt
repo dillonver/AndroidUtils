@@ -1,5 +1,9 @@
 package xyz.dcln.androidutils.utils
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.os.Build
+import java.io.ByteArrayOutputStream
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.util.*
@@ -90,4 +94,41 @@ object EncodeUtils {
 
         return byteList.toByteArray()
     }
+
+
+    fun imageFileToBase64(
+        imageFilePath: String
+    ): String? {
+        return try {
+            val bitmap = BitmapFactory.decodeFile(imageFilePath)
+            bitmapToBase64(bitmap)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+
+    fun bitmapToBase64(bitmap: Bitmap): String {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        val format: Bitmap.CompressFormat = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> Bitmap.CompressFormat.WEBP_LOSSLESS
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP -> Bitmap.CompressFormat.WEBP
+            else -> Bitmap.CompressFormat.PNG // For API level below 21, use PNG or JPEG as needed
+        }
+        bitmap.compress(format, 100, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        return android.util.Base64.encodeToString(byteArray, android.util.Base64.DEFAULT)
+    }
+
+    /**
+     * 将Base64字符串转换为Bitmap
+     * @param base64String Base64字符串
+     * @return Bitmap对象
+     */
+    fun base64ToBitmap(base64String: String): Bitmap {
+        val decodeBytes = android.util.Base64.decode(base64String, android.util.Base64.DEFAULT)
+        return BitmapFactory.decodeByteArray(decodeBytes, 0, decodeBytes.size)
+    }
+
 }
