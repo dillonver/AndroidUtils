@@ -22,7 +22,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * `Floatie` - A flexible and easy-to-use floating window manager for Android.
+ * `Floaty` - A flexible and easy-to-use floating window manager for Android.
  *
  * Features:
  * 1. Easy to create and manage floating windows with customizable content.
@@ -33,17 +33,17 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * Example Usage:
  * ```kotlin
- * val myFloatie = Floatie.create(context = this) {
+ * val myFloaty = Floaty.create(context = this) {
  *     setContentView(R.layout.my_text_view) {
  *         if (this is TextView) {
- *             text = "Hello, Floatie!"
+ *             text = "Hello, Floaty!"
  *         }
  *     }
  *     setXOffset(100)
  *     setYOffset(200)
  *     setDraggable(true)
  * }
- * myFloatie.show()
+ * myFloaty.show()
  * ```
  *
  * @param context The application context used to create the floating window.
@@ -55,7 +55,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @since 2023-08-15
  */
 @SuppressLint("ObsoleteSdkInt")
-class Floatie private constructor(
+class Floaty private constructor(
     private val context: Context,
     private val reuse: Boolean = false,
     val tag: String // Make tag an instance variable instead of static
@@ -79,8 +79,8 @@ class Floatie private constructor(
     private var onWindowException: ((Exception) -> Unit)? = null
     private var onPermissionException: ((SecurityException) -> Unit)? = null
 
-    private var onShow: ((Floatie) -> Unit)? = null
-    private var onHide: ((Floatie) -> Unit)? = null
+    private var onShow: ((Floaty) -> Unit)? = null
+    private var onHide: ((Floaty) -> Unit)? = null
 
 
     init {
@@ -130,7 +130,7 @@ class Floatie private constructor(
     }
 
 
-    fun setContentView(newView: View, initView: View.() -> Unit = {}): Floatie {
+    fun setContentView(newView: View, initView: View.() -> Unit = {}): Floaty {
         if (isAddedToWindow) {
             mWindowManager.removeView(mView)
         }
@@ -146,24 +146,24 @@ class Floatie private constructor(
         return this
     }
 
-    fun setContentView(layoutResId: Int, initView: View.() -> Unit = {}): Floatie {
+    fun setContentView(layoutResId: Int, initView: View.() -> Unit = {}): Floaty {
         // Inflate a new view from the given layout resource ID and set it as content
         return setContentView(LayoutInflater.from(context).inflate(layoutResId, null), initView)
     }
 
     fun setLifecycleListener(
-        onShow: ((Floatie) -> Unit)? = null,
-        onHide: ((Floatie) -> Unit)? = null
-    ): Floatie = apply {
+        onShow: ((Floaty) -> Unit)? = null,
+        onHide: ((Floaty) -> Unit)? = null
+    ): Floaty = apply {
         this.onShow = onShow
         this.onHide = onHide
     }
 
-    fun setPermissionExceptionCallback(callback: (SecurityException) -> Unit): Floatie = apply {
+    fun setPermissionExceptionCallback(callback: (SecurityException) -> Unit): Floaty = apply {
         this.onPermissionException = callback
     }
 
-    fun setAnimationStyle(animationStyle: Int = R.style.FloatieDefaultWindowStyle) =
+    fun setAnimationStyle(animationStyle: Int = R.style.FloatyDefaultWindowStyle) =
         apply { mLayoutParams.windowAnimations = animationStyle }
 
 
@@ -188,11 +188,11 @@ class Floatie private constructor(
 
     fun setWindowFlags(flags: Int) = apply { mLayoutParams.flags = flags }
 
-    fun setDisplayDuration(durationMillis: Long): Floatie = apply {
+    fun setDisplayDuration(durationMillis: Long): Floaty = apply {
         this.displayDuration = durationMillis
     }
 
-    fun setDraggable(draggable: Boolean): Floatie = apply {
+    fun setDraggable(draggable: Boolean): Floaty = apply {
         this.isDraggable = draggable
         setupTouchListener()
     }
@@ -201,11 +201,11 @@ class Floatie private constructor(
     /**
      * 设置外部点击是否透传给下层UI元素。
      *
-     * 当此值设置为true时，点击Floatie外部区域时，事件会被传递到下层的UI元素，
+     * 当此值设置为true时，点击Floaty外部区域时，事件会被传递到下层的UI元素，
      * 在这种情况下，setDismissOnOutsideClick方法的设置将无效。
      *
      * @param through 如果为true，点击外部区域事件会传递到下层UI元素；如果为false，则不会。
-     * @return 返回Floatie实例，便于链式调用。
+     * @return 返回Floaty实例，便于链式调用。
      */
     fun setTouchThroughEnabled(through: Boolean) = apply {
         val flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
@@ -221,15 +221,15 @@ class Floatie private constructor(
     }
 
     /**
-     * 设置点击Floatie外部区域是否会导致Floatie消失。
+     * 设置点击Floaty外部区域是否会导致Floaty消失。
      *
      * 注意：当setTouchThroughEnabled设置为true时，此方法设置将无效，
-     * 因为此时点击事件已经被传递给了下层UI元素(如需关闭Floatie，请手动处理)。
+     * 因为此时点击事件已经被传递给了下层UI元素(如需关闭Floaty，请手动处理)。
      *
-     * @param dismissOnOutsideClick 如果为true，点击外部区域会导致Floatie消失；如果为false，则不会。
-     * @return 返回Floatie实例，便于链式调用。
+     * @param dismissOnOutsideClick 如果为true，点击外部区域会导致Floaty消失；如果为false，则不会。
+     * @return 返回Floaty实例，便于链式调用。
      */
-    fun setDismissOnOutsideClick(dismissOnOutsideClick: Boolean): Floatie = apply {
+    fun setDismissOnOutsideClick(dismissOnOutsideClick: Boolean): Floaty = apply {
         this.dismissOnOutsideClick = dismissOnOutsideClick
 
     }
@@ -286,13 +286,13 @@ class Floatie private constructor(
     }
 
 
-    fun setWindowExceptionCallback(callback: (Exception) -> Unit): Floatie = apply {
+    fun setWindowExceptionCallback(callback: (Exception) -> Unit): Floaty = apply {
         this.onWindowException = callback
     }
 
 
     //慎用
-    fun getFloatieLayoutParams(): WindowManager.LayoutParams {
+    fun getFloatyLayoutParams(): WindowManager.LayoutParams {
         mLayoutParams.windowAnimations
         return this.mLayoutParams
     }
@@ -349,27 +349,27 @@ class Floatie private constructor(
 
 
     companion object {
-        private val instances: ConcurrentHashMap<String, WeakReference<Floatie>> =
+        private val instances: ConcurrentHashMap<String, WeakReference<Floaty>> =
             ConcurrentHashMap()
 
         fun create(
             context: Context,
             tag: String? = null,
             reuse: Boolean = false,
-            init: Floatie.() -> Unit
-        ): Floatie {
-            var floatieTag = tag ?: generateUniqueTag()
-            val existingFloatie = instances[floatieTag]?.get()
-            return if (!reuse || existingFloatie == null) {
-                if (instances.containsKey(floatieTag)) {
-                    floatieTag = generateUniqueTag()
+            init: Floaty.() -> Unit
+        ): Floaty {
+            var floatyTag = tag ?: generateUniqueTag()
+            val existingFloaty = instances[floatyTag]?.get()
+            return if (!reuse || existingFloaty == null) {
+                if (instances.containsKey(floatyTag)) {
+                    floatyTag = generateUniqueTag()
                 }
-                val newFloatie = Floatie(context, reuse, floatieTag).apply(init)
-                instances[floatieTag] = WeakReference(newFloatie)
-                newFloatie
+                val newFloaty = Floaty(context, reuse, floatyTag).apply(init)
+                instances[floatyTag] = WeakReference(newFloaty)
+                newFloaty
             } else {
-                // Reuse the existing Floatie instance
-                existingFloatie.apply(init)
+                // Reuse the existing Floaty instance
+                existingFloaty.apply(init)
             }
         }
 

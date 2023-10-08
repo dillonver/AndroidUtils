@@ -46,7 +46,7 @@
         <activity android:name="com.android.example.ui.test.KeyboardUtilsTestAct" />
         <activity android:name="com.android.example.ui.test.PermissionUtilsActivity" />
         <activity
-            android:name="com.android.example.ui.test.FloatieTestActivity"
+            android:name="com.android.example.ui.test.FloatyTestActivity"
             android:launchMode="singleTop" />
         <activity android:name="com.android.example.ui.test.WifiUtilsTestAct" />
 

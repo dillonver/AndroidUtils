@@ -10,10 +10,10 @@ import xyz.dcln.androidutils.utils.AppUtils.addAppStateListener
 import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.LogUtils.logI
 import xyz.dcln.androidutils.utils.ToastUtils.toastShort
-import xyz.dcln.androidutils.view.Floatie
+import xyz.dcln.androidutils.view.Floaty
 
 
-class FloatieTestActivity : BaseBindingActivity<ActivityTestBinding>() {
+class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
     override fun createBinding(): ActivityTestBinding {
         return ActivityTestBinding.inflate(layoutInflater)
     }
@@ -39,21 +39,21 @@ class FloatieTestActivity : BaseBindingActivity<ActivityTestBinding>() {
         super.initListener()
 
         viewBinding.tvCancel.setOnClickListener {
-            Floatie.cancelByTag("dillonTest")
+            Floaty.cancelByTag("dillonTest")
 
-            // Floatie.cancelAll()
+            // Floaty.cancelAll()
             // finish()
 
         }
         viewBinding.tvTest3.apply {
             text = "常规弹窗"
             setOnClickListener {
-                Floatie.create(this@FloatieTestActivity, tag = "dillonTest") {
+                Floaty.create(this@FloatyTestActivity, tag = "dillonTest") {
                     setLifecycleListener(
                         onShow = {
-                            LogUtils.i(getFloatTag(), tag = "Floatie")
+                            LogUtils.i(getFloatTag(), tag = "Floaty")
                         }, onHide = {
-                            LogUtils.i(getFloatTag(), tag = "Floatie")
+                            LogUtils.i(getFloatTag(), tag = "Floaty")
                         })
 
                     setContentView(R.layout.dialog_test_a) {
@@ -92,13 +92,13 @@ class FloatieTestActivity : BaseBindingActivity<ActivityTestBinding>() {
             text = "复用弹窗2"
             setOnClickListener {
                 val myTag = "dillonTest"
-                LogUtils.i(Floatie.isShowing(myTag))
-                Floatie.create(this@FloatieTestActivity, myTag, true) {
+                LogUtils.i(Floaty.isShowing(myTag))
+                Floaty.create(this@FloatyTestActivity, myTag, true) {
                     setLifecycleListener(
                         onShow = {
-                            LogUtils.i("onShow", tag = "Floatie")
+                            LogUtils.i("onShow", tag = "Floaty")
                         }, onHide = {
-                            LogUtils.i("onHide", tag = "Floatie")
+                            LogUtils.i("onHide", tag = "Floaty")
                         })
 
                 }
