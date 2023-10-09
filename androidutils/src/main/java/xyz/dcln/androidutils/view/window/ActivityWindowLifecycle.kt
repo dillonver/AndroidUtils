@@ -36,10 +36,11 @@ internal class ActivityWindowLifecycle(
     override fun onActivityResumed(activity: Activity) {}
     override fun onActivityPaused(activity: Activity) {
         // 一定要在 onPaused 方法中销毁掉，如果放在 onDestroyed 方法中还是有一定几率会导致内存泄露
-        if (mActivity === activity && mActivity!!.isFinishing && mWindow != null && mWindow!!.isShowing) {
-            mWindow?.cancel()
+        if (mActivity === activity && mActivity!!.isFinishing) {
+            mWindow?.recycle()
         }
     }
+
     override fun onActivityDestroyed(activity: Activity) {
         if (mActivity === activity) {
             mActivity = null
@@ -47,6 +48,7 @@ internal class ActivityWindowLifecycle(
             mWindow = null
         }
     }
+
     override fun onActivityStopped(activity: Activity) {}
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 

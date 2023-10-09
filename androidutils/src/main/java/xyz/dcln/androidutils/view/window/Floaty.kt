@@ -1,6 +1,5 @@
 package xyz.dcln.androidutils.view.window
 
-import android.R
 import android.app.Activity
 import android.app.Application
 import android.content.Context
@@ -21,18 +20,20 @@ import android.view.WindowManager
 import android.view.WindowManager.BadTokenException
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import xyz.dcln.androidutils.R
 import xyz.dcln.androidutils.view.window.ScreenOrientationMonitor.OnScreenOrientationCallback
 import xyz.dcln.androidutils.view.window.draggable.BaseDraggable
 import xyz.dcln.androidutils.view.window.draggable.MovingDraggable
+import java.lang.ref.WeakReference
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 @Suppress("unused")
-class Floaty private constructor(context: Context) : Runnable, OnScreenOrientationCallback {
-    /**
-     * 获取上下文对象（可能为空）
-     */
-    /** 上下文  */
-    var context: Context?
-        private set
+class Floaty private constructor(
+    private val context: Context,
+    val tag: String
+) : Runnable, OnScreenOrientationCallback {
+    val handler = Handler(Looper.getMainLooper())
 
     /** 根布局  */
     private var mDecorView: ViewGroup?
@@ -40,27 +41,18 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * 获取 WindowManager 对象（可能为空）
      */
     /** 悬浮窗  */
-    var windowManager: WindowManager?
-        private set
+    private var windowManager: WindowManager?
     /**
      * 获取 WindowManager 参数集（可能为空）
      */
     /** 悬浮窗参数  */
     var windowParams: WindowManager.LayoutParams?
-        private set
-    /**
-     * 当前是否已经显示
-     */
+
     /** 当前是否已经显示  */
-    var isShowing = false
-        private set
+    private var isShowing = false
 
     /** 悬浮窗显示时长  */
     private var mDuration = 0
-
-    /** 悬浮窗标记  */
-    var tag: String? = null
-        private set
 
     /** Toast 生命周期管理  */
     private var mLifecycle: ActivityWindowLifecycle? = null
@@ -68,8 +60,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * 获取当前的拖拽规则对象（可能为空）
      */
     /** 自定义拖动处理  */
-    var draggable: BaseDraggable? = null
-        private set
+    private var draggable: BaseDraggable? = null
 
     /** 吐司显示和取消监听  */
     private var mListener: OnWindowLifecycle? = null
@@ -83,7 +74,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
     /**
      * 创建一个局部悬浮窗
      */
-    constructor(activity: Activity) : this(activity as Context) {
+    constructor(activity: Activity, tag: String) : this(activity as Context, tag) {
         val window = activity.window
         val decorView = window.decorView
         val params = activity.window.attributes
@@ -112,7 +103,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
     /**
      * 创建一个全局悬浮窗
      */
-    constructor(application: Application) : this(application as Context) {
+    constructor(application: Application, tag: String) : this(application as Context, tag) {
 
         // 设置成全局的悬浮窗，注意需要先申请悬浮窗权限
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -123,7 +114,6 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
     }
 
     init {
-        this.context = context
         mDecorView = WindowLayout(context)
         windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         // 配置一些默认的参数
@@ -131,24 +121,14 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
         windowParams?.height = WindowManager.LayoutParams.WRAP_CONTENT
         windowParams?.width = WindowManager.LayoutParams.WRAP_CONTENT
         windowParams?.format = PixelFormat.TRANSLUCENT
-        windowParams?.windowAnimations = R.style.Animation_Toast
         windowParams?.packageName = context.packageName
         // 设置触摸外层布局（除 WindowManager 外的布局，默认是 WindowManager 显示的时候外层不可触摸）
         // 需要注意的是设置了 FLAG_NOT_TOUCH_MODAL 必须要设置 FLAG_NOT_FOCUSABLE，否则就会导致用户按返回键无效
         windowParams?.flags = (WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
 
-        // 将当前实例添加到静态集合中
-        sWindowInstanceSet.add(this)
     }
 
-    /**
-     * 设置悬浮窗口标记
-     */
-    fun setTag(tag: String?): Floaty {
-        this.tag = tag
-        return this
-    }
 
     /**
      * 设置悬浮窗宽度
@@ -188,12 +168,10 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * 设置悬浮窗显示的重心
      */
     fun setGravity(gravity: Int): Floaty {
-        windowParams!!.gravity = gravity
+        windowParams?.gravity = gravity
         postUpdate()
         post {
-            if (draggable != null) {
-                draggable!!.refreshLocationCoordinate()
-            }
+            draggable?.refreshLocationCoordinate()
         }
         return this
     }
@@ -202,12 +180,10 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * 设置水平偏移量
      */
     fun setXOffset(px: Int): Floaty {
-        windowParams!!.x = px
+        windowParams?.x = px
         postUpdate()
         post {
-            if (draggable != null) {
-                draggable!!.refreshLocationCoordinate()
-            }
+            draggable?.refreshLocationCoordinate()
         }
         return this
     }
@@ -216,12 +192,10 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * 设置垂直偏移量
      */
     fun setYOffset(px: Int): Floaty {
-        windowParams!!.y = px
+        windowParams?.y = px
         postUpdate()
         post {
-            if (draggable != null) {
-                draggable!!.refreshLocationCoordinate()
-            }
+            draggable?.refreshLocationCoordinate()
         }
         return this
     }
@@ -263,7 +237,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * 添加窗口标记
      */
     fun addWindowFlags(flags: Int): Floaty {
-        windowParams!!.flags = windowParams!!.flags or flags
+        windowParams?.flags = windowParams!!.flags or flags
         postUpdate()
         return this
     }
@@ -272,7 +246,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * 移除窗口标记
      */
     fun removeWindowFlags(flags: Int): Floaty {
-        windowParams!!.flags = windowParams!!.flags and flags.inv()
+        windowParams?.flags = windowParams!!.flags and flags.inv()
         postUpdate()
         return this
     }
@@ -281,7 +255,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * 设置窗口标记
      */
     fun setWindowFlags(flags: Int): Floaty {
-        windowParams!!.flags = flags
+        windowParams?.flags = flags
         postUpdate()
         return this
     }
@@ -297,7 +271,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * 设置悬浮窗的显示类型
      */
     fun setWindowType(type: Int): Floaty {
-        windowParams!!.type = type
+        windowParams?.type = type
         postUpdate()
         return this
     }
@@ -305,11 +279,12 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
     /**
      * 设置动画样式
      */
-    fun setAnimStyle(id: Int): Floaty {
-        windowParams!!.windowAnimations = id
+    fun setAnimStyle(id: Int = R.style.FloatyDefaultWindowStyle): Floaty {
+        windowParams?.windowAnimations = id
         postUpdate()
         return this
     }
+
 
     /**
      * 设置软键盘模式
@@ -322,7 +297,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * [WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN]：当软键盘弹出时，窗口不需要调整大小，要确保输入焦点是可见的
      */
     fun setSoftInputMode(mode: Int): Floaty {
-        windowParams!!.softInputMode = mode
+        windowParams?.softInputMode = mode
         // 如果设置了不能触摸，则擦除这个标记，否则会导致无法弹出输入法
         removeWindowFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
         postUpdate()
@@ -342,7 +317,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * 设置悬浮窗透明度
      */
     fun setWindowAlpha(alpha: Float): Floaty {
-        windowParams!!.alpha = alpha
+        windowParams?.alpha = alpha
         postUpdate()
         return this
     }
@@ -351,7 +326,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * 设置垂直间距
      */
     fun setVerticalMargin(verticalMargin: Float): Floaty {
-        windowParams!!.verticalMargin = verticalMargin
+        windowParams?.verticalMargin = verticalMargin
         postUpdate()
         return this
     }
@@ -550,23 +525,23 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
     /**
      * 设置内容布局
      */
-    fun setContentView(id: Int): Floaty {
-        return setContentView(LayoutInflater.from(context).inflate(id, mDecorView, false))
+    fun setContentView(id: Int, initView: View.() -> Unit = {}): Floaty {
+        return setContentView(LayoutInflater.from(context).inflate(id, mDecorView, false), initView)
     }
 
-    fun setContentView(view: View): Floaty {
+    fun setContentView(newView: View, initView: View.() -> Unit = {}): Floaty {
         if (mDecorView!!.childCount > 0) {
             mDecorView!!.removeAllViews()
         }
-        mDecorView!!.addView(view)
-        val layoutParams = view.layoutParams
+        contentView = newView.apply(initView)
+        mDecorView?.addView(contentView)
+        val layoutParams = contentView?.layoutParams
         if (layoutParams is MarginLayoutParams) {
-            val marginLayoutParams = layoutParams
             // 清除 Margin，因为 WindowManager 没有这一属性可以设置，并且会跟根布局相冲突
-            marginLayoutParams.topMargin = 0
-            marginLayoutParams.bottomMargin = 0
-            marginLayoutParams.leftMargin = 0
-            marginLayoutParams.rightMargin = 0
+            layoutParams.topMargin = 0
+            layoutParams.bottomMargin = 0
+            layoutParams.leftMargin = 0
+            layoutParams.rightMargin = 0
         }
 
         // 如果当前没有设置重心，就自动获取布局重心
@@ -674,7 +649,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * 显示悬浮窗
      */
     fun show() {
-        require(!(mDecorView!!.childCount == 0 || windowParams == null)) { "WindowParams and view cannot be empty" }
+        require(!(mDecorView?.childCount == 0 || windowParams == null)) { "WindowParams and view cannot be empty" }
 
         // 如果当前已经显示则进行更新
         if (isShowing) {
@@ -689,10 +664,10 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
         }
         try {
             // 如果 View 已经被添加的情况下，就先把 View 移除掉
-            if (mDecorView!!.parent != null) {
-                windowManager!!.removeViewImmediate(mDecorView)
+            if (mDecorView?.parent != null) {
+                windowManager?.removeViewImmediate(mDecorView)
             }
-            windowManager!!.addView(mDecorView, windowParams)
+            windowManager?.addView(mDecorView, windowParams)
             // 当前已经显示
             isShowing = true
             // 如果当前限定了显示时长
@@ -701,14 +676,10 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
                 postDelayed(this, mDuration.toLong())
             }
             // 如果设置了拖拽规则
-            if (draggable != null) {
-                draggable!!.start(this)
-            }
+            draggable?.start(this)
 
             // 回调监听
-            if (mListener != null) {
-                mListener!!.onWindowShow(this)
-            }
+            mListener?.onWindowShow(this)
         } catch (e: NullPointerException) {
             // 如果这个 View 对象被重复添加到 WindowManager 则会抛出异常
             // java.lang.IllegalStateException: View has already been added to the window manager.
@@ -733,15 +704,13 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
 
             // 如果当前 WindowManager 没有附加这个 View 则会抛出异常
             // java.lang.IllegalArgumentException: View not attached to window manager
-            windowManager!!.removeViewImmediate(mDecorView)
+            windowManager?.removeViewImmediate(mDecorView)
 
             // 移除销毁任务
             removeCallbacks(this)
 
             // 回调监听
-            if (mListener != null) {
-                mListener!!.onWindowCancel(this)
-            }
+            mListener?.onWindowCancel(this)
         } catch (e: NullPointerException) {
             e.printStackTrace()
         } catch (e: IllegalArgumentException) {
@@ -794,7 +763,6 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
         // 反注册 Activity 生命周期
         mLifecycle?.unregister()
         mListener = null
-        context = null
         mDecorView = null
         windowManager = null
         windowParams = null
@@ -802,7 +770,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
         draggable = null
         mScreenOrientationMonitor = null
         // 将当前实例从静态集合中移除
-        sWindowInstanceSet.remove(this)
+        instances.remove(tag)
     }
 
     val decorView: View?
@@ -810,13 +778,9 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
          * 获取根布局（可能为空）
          */
         get() = mDecorView
-    val contentView: View?
-        /**
-         * 获取内容布局
-         */
-        get() = if (mDecorView!!.childCount == 0) {
-            null
-        } else mDecorView!!.getChildAt(0)
+    var contentView: View? = if (mDecorView!!.childCount == 0) {
+        null
+    } else mDecorView!!.getChildAt(0)
 
     /**
      * 根据 ViewId 获取 View
@@ -874,11 +838,11 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
         return setOnClickListener(findViewById(id), listener)
     }
 
-    private fun setOnClickListener(view: View?, listener: OnClickListener): Floaty {
+    fun setOnClickListener(view: View?, listener: OnClickListener): Floaty {
         // 如果当前是否设置了不可触摸，如果是就擦除掉
         removeWindowFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-        view!!.isClickable = true
-        view.setOnClickListener(ViewClickWrapper(this, listener))
+        view?.isClickable = true
+        view?.setOnClickListener(ViewClickWrapper(this, listener))
         return this
     }
 
@@ -893,11 +857,11 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
         return setOnLongClickListener(findViewById(id), listener)
     }
 
-    private fun setOnLongClickListener(view: View?, listener: OnLongClickListener): Floaty {
+    fun setOnLongClickListener(view: View?, listener: OnLongClickListener): Floaty {
         // 如果当前是否设置了不可触摸，如果是就擦除掉
         removeWindowFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-        view!!.isClickable = true
-        view.setOnLongClickListener(ViewLongClickWrapper(this, listener))
+        view?.isClickable = true
+        view?.setOnLongClickListener(ViewLongClickWrapper(this, listener))
         return this
     }
 
@@ -915,8 +879,8 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
     private fun setOnTouchListener(view: View?, listener: OnTouchListener): Floaty {
         // 当前是否设置了不可触摸，如果是就擦除掉
         removeWindowFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-        view!!.isEnabled = true
-        view.setOnTouchListener(ViewTouchWrapper(this, listener))
+        view?.isEnabled = true
+        view?.setOnTouchListener(ViewTouchWrapper(this, listener))
         return this
     }
 
@@ -934,10 +898,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
         if (!isShowing) {
             return
         }
-        if (draggable == null) {
-            return
-        }
-        draggable!!.onScreenOrientationChange()
+        draggable?.onScreenOrientationChange()
     }
 
     /**
@@ -982,85 +943,72 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
     }
 
     companion object {
-        val handler = Handler(Looper.getMainLooper())
-        private val sWindowInstanceSet: MutableList<Floaty> = ArrayList()
+
+        private val instances: ConcurrentHashMap<String, WeakReference<Floaty>> =
+            ConcurrentHashMap()
 
         /**
-         * 基于 Activity 创建一个 EasyWindow 实例
+         * 基于 Activity 创建一个 Floaty 实例
          */
-        fun create(activity: Activity?): Floaty? {
-            return activity?.let { Floaty(it) }
+        fun create(activity: Activity, tag: String? = null, init: Floaty.() -> Unit): Floaty {
+            return baseCreate(activity, tag, init)
         }
 
         /**
-         * 基于全局创建一个 EasyWindow 实例，需要悬浮窗权限
+         * 基于全局创建一个 Floaty 实例，需要悬浮窗权限
          */
-        fun create(application: Application?): Floaty? {
-            return application?.let { Floaty(it) }
+        fun create(application: Application, tag: String? = null, init: Floaty.() -> Unit): Floaty {
+            return baseCreate(application, tag, init)
         }
 
-        /**
-         * 取消所有正在显示的悬浮窗
-         */
-        @Synchronized
+
+        private fun baseCreate(
+            context: Context,
+            tag: String? = null,
+            init: Floaty.() -> Unit
+        ): Floaty {
+            var floatyTag = tag ?: generateUniqueTag()
+            val existingFloaty = getFloatyByTag(floatyTag)
+            return if (existingFloaty == null) {
+                if (instances.containsKey(floatyTag)) {
+                    floatyTag = generateUniqueTag()
+                }
+                val newFloaty = Floaty(context, floatyTag).apply(init)
+                instances[floatyTag] = WeakReference(newFloaty)
+                newFloaty
+            } else {
+                // Reuse the existing Floaty instance
+                existingFloaty.apply(init)
+            }
+        }
+
+        private fun generateUniqueTag(): String {
+            return UUID.randomUUID().toString()
+        }
+
+        fun getFloatyByTag(tag: String): Floaty? {
+            return instances[tag]?.get()
+        }
+
+        fun cancelByTag(tag: String) {
+            getFloatyByTag(tag)?.recycle()
+        }
+
+
         fun cancelAll() {
-            for (floaty in sWindowInstanceSet) {
-                floaty.cancel()
+            for (weakRef in instances.values) {
+                weakRef.get()?.recycle()
             }
+            instances.clear()
         }
 
-        /**
-         * 取消特定标记的悬浮窗
-         */
-        @Synchronized
-        fun cancelByTag(tag: String?) {
-            if (tag == null) {
-                return
-            }
-            for (floaty in sWindowInstanceSet) {
-                if (tag != floaty.tag) {
-                    continue
-                }
-                floaty.cancel()
-            }
+        fun getContentView(tag: String): View? {
+            return getFloatyByTag(tag)?.contentView
         }
 
-        /**
-         * 回收所有正在显示的悬浮窗
-         */
-        @Synchronized
-        fun recycleAll() {
-            val iterator = sWindowInstanceSet.iterator()
-            while (iterator.hasNext()) {
-                val floaty = iterator.next() ?: continue
-                // 这里解释一下，为什么要使用迭代器移除，如果不那么做的话
-                // easyWindow.recycle 方法里面会再移除一次
-                // 当前又是一个 while 循环，可能会出现角标越界的情况
-                iterator.remove()
-                floaty.recycle()
-            }
+        fun isShowing(tag: String): Boolean {
+            return getFloatyByTag(tag)?.isShowing == true
         }
 
-
-        /**
-         * 回收特定标记的悬浮窗
-         */
-        fun recycleByTag(tag: String?) {
-            if (tag == null) {
-                return
-            }
-            val iterator = sWindowInstanceSet.iterator()
-            while (iterator.hasNext()) {
-                val floaty = iterator.next() ?: continue
-                if (tag != floaty.tag) {
-                    continue
-                }
-                // 这里解释一下，为什么要使用迭代器移除，如果不那么做的话
-                // easyWindow.recycle 方法里面会再移除一次
-                // 当前又是一个 while 循环，可能会出现角标越界的情况
-                iterator.remove()
-                floaty.recycle()
-            }
-        }
     }
 }

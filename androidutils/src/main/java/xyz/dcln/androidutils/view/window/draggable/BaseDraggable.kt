@@ -8,9 +8,10 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import xyz.dcln.androidutils.view.window.Floaty
+import kotlin.math.abs
 
 abstract class BaseDraggable : View.OnTouchListener {
-    protected var window: Floaty<*>? = null
+    protected var window: Floaty? = null
         private set
     protected var decorView: View? = null
         private set
@@ -27,14 +28,14 @@ abstract class BaseDraggable : View.OnTouchListener {
         private set
 
     @SuppressLint("ClickableViewAccessibility")
-    fun start(window: Floaty<*>) {
+    fun start(window: Floaty) {
         this.window = window
         decorView = window.decorView
-        decorView?.setOnTouchListener(View.OnTouchListener { v, event ->
+        decorView?.setOnTouchListener { v, event ->
             refreshLocationCoordinate()
             onTouch(v, event)
-        })
-        decorView?.post(Runnable { refreshLocationCoordinate() })
+        }
+        decorView?.post { refreshLocationCoordinate() }
     }
 
     fun refreshLocationCoordinate() {
