@@ -297,6 +297,11 @@ class Floaty private constructor(
         return this.mLayoutParams
     }
 
+    fun getContentView(): View? {
+        return this.mView
+    }
+
+
     fun show() {
         // Before trying to show the window, we check for the necessary permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
@@ -359,7 +364,7 @@ class Floaty private constructor(
             init: Floaty.() -> Unit
         ): Floaty {
             var floatyTag = tag ?: generateUniqueTag()
-            val existingFloaty = instances[floatyTag]?.get()
+            val existingFloaty = getFloatyByTag(floatyTag)
             return if (!reuse || existingFloaty == null) {
                 if (instances.containsKey(floatyTag)) {
                     floatyTag = generateUniqueTag()
@@ -377,10 +382,17 @@ class Floaty private constructor(
             return UUID.randomUUID().toString()
         }
 
-
-        fun isShowing(tag: String): Boolean {
-            return instances[tag]?.get()?.isAddedToWindow == true
+        fun getFloatyByTag(tag: String): Floaty? {
+            return instances[tag]?.get()
         }
+
+        fun cancelByTag(tag: String) {
+            getFloatyByTag(tag)?.let {
+                it.hide()
+                instances.remove(tag)
+            }
+        }
+
 
         fun cancelAll() {
             for (weakRef in instances.values) {
@@ -389,13 +401,13 @@ class Floaty private constructor(
             instances.clear()
         }
 
-        fun cancelByTag(tag: String) {
-            instances[tag]?.get()?.let {
-                it.hide()
-                instances.remove(tag)
-            }
+        fun getContentView(tag: String): View? {
+            return getFloatyByTag(tag)?.getContentView()
         }
 
+        fun isShowing(tag: String): Boolean {
+            return getFloatyByTag(tag)?.isAddedToWindow == true
+        }
     }
 
 }

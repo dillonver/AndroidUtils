@@ -37,9 +37,10 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
 
     override fun initListener() {
         super.initListener()
+        val myTag = "dillonTest"
 
         viewBinding.tvCancel.setOnClickListener {
-            Floaty.cancelByTag("dillonTest")
+            Floaty.cancelByTag(myTag)
 
             // Floaty.cancelAll()
             // finish()
@@ -48,7 +49,7 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
         viewBinding.tvTest3.apply {
             text = "常规弹窗"
             setOnClickListener {
-                Floaty.create(this@FloatyTestActivity, tag = "dillonTest") {
+                Floaty.create(this@FloatyTestActivity, tag = myTag, reuse = false) {
                     setLifecycleListener(
                         onShow = {
                             LogUtils.i(getFloatTag(), tag = "Floaty")
@@ -67,7 +68,7 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                             setOnClickListener { hide() }
                         }
                     }
-                    setAnimationStyle()
+                   // setAnimationStyle()
                     //setDisplayDuration(5*1000L)
                     //setGravity(Gravity.TOP)
                     //setWidth(ScreenUtils.getScreenWidth()*3/4)
@@ -75,8 +76,8 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                     //setYOffset(100)
                     //setXOffset(100)
                     //setBackgroundDimAmount(0f)
-//                    setDraggable(true)
-//                    setTouchThroughEnabled(false)
+                    setDraggable(true)
+                    setTouchThroughEnabled(true)
 //                    setDismissOnOutsideClick(false)
 
                 }.show()
@@ -85,22 +86,22 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
         }
 
         viewBinding.tvTest2.apply {
-
         }
 
         viewBinding.tvTest1.apply {
             text = "复用弹窗2"
             setOnClickListener {
-                val myTag = "dillonTest"
                 LogUtils.i(Floaty.isShowing(myTag))
-                Floaty.create(this@FloatyTestActivity, myTag, true) {
-                    setLifecycleListener(
-                        onShow = {
-                            LogUtils.i("onShow", tag = "Floaty")
-                        }, onHide = {
-                            LogUtils.i("onHide", tag = "Floaty")
-                        })
-
+                val floaty= Floaty.getFloatyByTag(myTag)
+                floaty?.getContentView()?.apply {
+                    val binding = DialogTestABinding.bind(this)
+                    binding.tvAgree.apply {
+                        text = "我不是同意"
+                        setOnClickListener { toastShort("我不是同意") }
+                    }
+                    binding.tvCancel.apply {
+                        text = "我不是取消"
+                    }
                 }
             }
         }

@@ -38,12 +38,7 @@ class WifiUtilsTestAct : BaseBindingActivity<ActivityTestBinding>() {
                 Manifest.permission.ACCESS_WIFI_STATE,
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 onAllGranted = {
-                    WifiUtils.requestWifiScan(this@WifiUtilsTestAct,
-                        onScanResultsAvailable = {
-                            LogUtils.i(GsonUtils.toJson(it))
-                        }, onError = {
-                            LogUtils.i(it)
-                        })
+
                 },
                 onPartialDenied = {
                     LogUtils.i("onPartialDenied")
