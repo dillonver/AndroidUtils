@@ -360,7 +360,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      * 设置水平间距
      */
     fun setHorizontalMargin(horizontalMargin: Float): Floaty {
-         windowParams?.horizontalMargin = horizontalMargin
+        windowParams?.horizontalMargin = horizontalMargin
         postUpdate()
         return this
     }
@@ -397,7 +397,7 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
      */
     fun setLayoutInDisplayCutoutMode(mode: Int): Floaty {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-             windowParams?.layoutInDisplayCutoutMode = mode
+            windowParams?.layoutInDisplayCutoutMode = mode
             postUpdate()
         }
         return this
@@ -547,7 +547,6 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
     }
 
 
-
     /**
      * 设置内容布局
      */
@@ -571,33 +570,33 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
         }
 
         // 如果当前没有设置重心，就自动获取布局重心
-        if ( windowParams?.gravity == Gravity.NO_GRAVITY) {
+        if (windowParams?.gravity == Gravity.NO_GRAVITY) {
             if (layoutParams is FrameLayout.LayoutParams) {
                 val gravity = layoutParams.gravity
                 if (gravity != FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY) {
-                     windowParams?.gravity = gravity
+                    windowParams?.gravity = gravity
                 }
             } else if (layoutParams is LinearLayout.LayoutParams) {
                 val gravity = layoutParams.gravity
                 if (gravity != FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY) {
-                     windowParams?.gravity = gravity
+                    windowParams?.gravity = gravity
                 }
             }
-            if ( windowParams?.gravity == Gravity.NO_GRAVITY) {
+            if (windowParams?.gravity == Gravity.NO_GRAVITY) {
                 // 默认重心是居中
-                 windowParams?.gravity = Gravity.CENTER
+                windowParams?.gravity = Gravity.CENTER
             }
         }
         if (layoutParams != null) {
-            if ( windowParams?.width == WindowManager.LayoutParams.WRAP_CONTENT &&
-                 windowParams?.height == WindowManager.LayoutParams.WRAP_CONTENT
+            if (windowParams?.width == WindowManager.LayoutParams.WRAP_CONTENT &&
+                windowParams?.height == WindowManager.LayoutParams.WRAP_CONTENT
             ) {
                 // 如果当前 Dialog 的宽高设置了自适应，就以布局中设置的宽高为主
-                 windowParams?.width = layoutParams.width
-                 windowParams?.height = layoutParams.height
+                windowParams?.width = layoutParams.width
+                windowParams?.height = layoutParams.height
             } else {
                 // 如果当前通过代码动态设置了宽高，则以动态设置的为主
-                layoutParams.width =  windowParams!!.width
+                layoutParams.width = windowParams!!.width
                 layoutParams.height = windowParams!!.height
             }
         }
@@ -633,9 +632,9 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
         anchorView.getLocationOnScreen(anchorViewLocation)
         val windowVisibleRect = Rect()
         anchorView.getWindowVisibleDisplayFrame(windowVisibleRect)
-         windowParams?.gravity = Gravity.TOP or Gravity.START
-         windowParams?.x = anchorViewLocation[0] - windowVisibleRect.left + xOff
-         windowParams?.y = anchorViewLocation[1] - windowVisibleRect.top + yOff
+        windowParams?.gravity = Gravity.TOP or Gravity.START
+        windowParams?.x = anchorViewLocation[0] - windowVisibleRect.left + xOff
+        windowParams?.y = anchorViewLocation[1] - windowVisibleRect.top + yOff
         if (showGravity and Gravity.LEFT == Gravity.LEFT) {
             var rootViewWidth = mDecorView!!.width
             if (rootViewWidth == 0) {
@@ -790,16 +789,10 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
         if (isShowing) {
             cancel()
         }
-        if (mScreenOrientationMonitor != null) {
-            mScreenOrientationMonitor!!.unregisterCallback(context!!)
-        }
-        if (mListener != null) {
-            mListener!!.onWindowRecycle(this)
-        }
+        mScreenOrientationMonitor?.unregisterCallback(context!!)
+        mListener?.onWindowRecycle(this)
         // 反注册 Activity 生命周期
-        if (mLifecycle != null) {
-            mLifecycle!!.unregister()
-        }
+        mLifecycle?.unregister()
         mListener = null
         context = null
         mDecorView = null
@@ -1047,7 +1040,6 @@ class Floaty private constructor(context: Context) : Runnable, OnScreenOrientati
                 floaty.recycle()
             }
         }
-
 
 
         /**
