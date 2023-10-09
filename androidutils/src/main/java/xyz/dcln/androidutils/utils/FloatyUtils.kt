@@ -1,61 +1,55 @@
-package xyz.dcln.androidutils.view
+package xyz.dcln.androidutils.utils
 
-import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
-import android.content.Context
-import android.graphics.PixelFormat
-import android.graphics.Rect
-import android.os.Build
-import android.provider.Settings
-import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
-import android.view.WindowManager
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import xyz.dcln.androidutils.R
-import xyz.dcln.androidutils.utils.CoroutineUtils
-import xyz.dcln.androidutils.utils.LogUtils
-import java.lang.ref.WeakReference
+import xyz.dcln.androidutils.view.window.Floaty
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
-
 /**
- * `Floaty` - A flexible and easy-to-use floating window manager for Android.
- *
- * Features:
- * 1. Easy to create and manage floating windows with customizable content.
- * 2. Support for dragging floating windows across the screen.
- * 3. Lifecycle-aware: automatically removes itself when the associated `Activity` is destroyed.
- * 4. Extensive customization options for window size, position, appearance, and behavior.
- * 5. Supports handling multiple floating window instances, identified by unique tags.
- *
- * Example Usage:
- * ```kotlin
- * val myFloaty = Floaty.create(context = this) {
- *     setContentView(R.layout.my_text_view) {
- *         if (this is TextView) {
- *             text = "Hello, Floaty!"
- *         }
- *     }
- *     setXOffset(100)
- *     setYOffset(200)
- *     setDraggable(true)
- * }
- * myFloaty.show()
- * ```
- *
- * @param context The application context used to create the floating window.
- * @param tag A unique tag to identify and manage multiple floating window instances.
- * @param reuse Whether to reuse existing instances with the same tag.
- *
- * @author Dillon
- * @version 1.0
- * @since 2023-08-15
- */
-@SuppressLint("ObsoleteSdkInt")
-class Floaty private constructor(
+object FloatyUtils{
+
+    /**
+     * 基于 Activity 创建一个 EasyWindow 实例
+     */
+    fun create(activity: Activity?): Floaty<*>? {
+        return Floaty.with(activity)
+    }
+
+    /**
+     * 基于全局创建一个 EasyWindow 实例，需要悬浮窗权限
+     */
+    fun create(application: Application?): Floaty<*>? {
+        return Floaty.with(application)
+    }
+
+
+    fun getFloatyByTag(tag: String): FloatyUtils? {
+        return Floaty.
+    }
+
+    fun cancelByTag(tag: String) {
+        Floaty.cancelByTag(tag)
+    }
+
+
+    fun cancelAll() {
+        for (weakRef in instances.values) {
+            weakRef.get()?.hide()
+        }
+        instances.clear()
+    }
+
+    fun getContentView(tag: String): View? {
+        return getFloatyByTag(tag)?.getContentView()
+    }
+
+    fun isShowing(tag: String): Boolean {
+        return getFloatyByTag(tag)?.isAddedToWindow == true
+    }
+}
+
+
+class FloatyUtils private constructor(
     private val context: Context,
     private val reuse: Boolean = false,
     val tag: String // Make tag an instance variable instead of static
@@ -79,8 +73,8 @@ class Floaty private constructor(
     private var onWindowException: ((Exception) -> Unit)? = null
     private var onPermissionException: ((SecurityException) -> Unit)? = null
 
-    private var onShow: ((Floaty) -> Unit)? = null
-    private var onHide: ((Floaty) -> Unit)? = null
+    private var onShow: ((FloatyUtils) -> Unit)? = null
+    private var onHide: ((FloatyUtils) -> Unit)? = null
 
 
     init {
@@ -130,7 +124,7 @@ class Floaty private constructor(
     }
 
 
-    fun setContentView(newView: View, initView: View.() -> Unit = {}): Floaty {
+    fun setContentView(newView: View, initView: View.() -> Unit = {}): FloatyUtils {
         if (isAddedToWindow) {
             mWindowManager.removeView(mView)
         }
@@ -146,20 +140,20 @@ class Floaty private constructor(
         return this
     }
 
-    fun setContentView(layoutResId: Int, initView: View.() -> Unit = {}): Floaty {
+    fun setContentView(layoutResId: Int, initView: View.() -> Unit = {}): FloatyUtils {
         // Inflate a new view from the given layout resource ID and set it as content
         return setContentView(LayoutInflater.from(context).inflate(layoutResId, null), initView)
     }
 
     fun setLifecycleListener(
-        onShow: ((Floaty) -> Unit)? = null,
-        onHide: ((Floaty) -> Unit)? = null
-    ): Floaty = apply {
+        onShow: ((FloatyUtils) -> Unit)? = null,
+        onHide: ((FloatyUtils) -> Unit)? = null
+    ): FloatyUtils = apply {
         this.onShow = onShow
         this.onHide = onHide
     }
 
-    fun setPermissionExceptionCallback(callback: (SecurityException) -> Unit): Floaty = apply {
+    fun setPermissionExceptionCallback(callback: (SecurityException) -> Unit): FloatyUtils = apply {
         this.onPermissionException = callback
     }
 
@@ -188,11 +182,11 @@ class Floaty private constructor(
 
     fun setWindowFlags(flags: Int) = apply { mLayoutParams.flags = flags }
 
-    fun setDisplayDuration(durationMillis: Long): Floaty = apply {
+    fun setDisplayDuration(durationMillis: Long): FloatyUtils = apply {
         this.displayDuration = durationMillis
     }
 
-    fun setDraggable(draggable: Boolean): Floaty = apply {
+    fun setDraggable(draggable: Boolean): FloatyUtils = apply {
         this.isDraggable = draggable
         setupTouchListener()
     }
@@ -229,7 +223,7 @@ class Floaty private constructor(
      * @param dismissOnOutsideClick 如果为true，点击外部区域会导致Floaty消失；如果为false，则不会。
      * @return 返回Floaty实例，便于链式调用。
      */
-    fun setDismissOnOutsideClick(dismissOnOutsideClick: Boolean): Floaty = apply {
+    fun setDismissOnOutsideClick(dismissOnOutsideClick: Boolean): FloatyUtils = apply {
         this.dismissOnOutsideClick = dismissOnOutsideClick
 
     }
@@ -286,7 +280,7 @@ class Floaty private constructor(
     }
 
 
-    fun setWindowExceptionCallback(callback: (Exception) -> Unit): Floaty = apply {
+    fun setWindowExceptionCallback(callback: (Exception) -> Unit): FloatyUtils = apply {
         this.onWindowException = callback
     }
 
@@ -353,61 +347,7 @@ class Floaty private constructor(
     }
 
 
-    companion object {
-        private val instances: ConcurrentHashMap<String, WeakReference<Floaty>> =
-            ConcurrentHashMap()
 
-        fun create(
-            context: Context,
-            tag: String? = null,
-            reuse: Boolean = false,
-            init: Floaty.() -> Unit
-        ): Floaty {
-            var floatyTag = tag ?: generateUniqueTag()
-            val existingFloaty = getFloatyByTag(floatyTag)
-            return if (!reuse || existingFloaty == null) {
-                if (instances.containsKey(floatyTag)) {
-                    floatyTag = generateUniqueTag()
-                }
-                val newFloaty = Floaty(context, reuse, floatyTag).apply(init)
-                instances[floatyTag] = WeakReference(newFloaty)
-                newFloaty
-            } else {
-                // Reuse the existing Floaty instance
-                existingFloaty.apply(init)
-            }
-        }
-
-        private fun generateUniqueTag(): String {
-            return UUID.randomUUID().toString()
-        }
-
-        fun getFloatyByTag(tag: String): Floaty? {
-            return instances[tag]?.get()
-        }
-
-        fun cancelByTag(tag: String) {
-            getFloatyByTag(tag)?.let {
-                it.hide()
-                instances.remove(tag)
-            }
-        }
-
-
-        fun cancelAll() {
-            for (weakRef in instances.values) {
-                weakRef.get()?.hide()
-            }
-            instances.clear()
-        }
-
-        fun getContentView(tag: String): View? {
-            return getFloatyByTag(tag)?.getContentView()
-        }
-
-        fun isShowing(tag: String): Boolean {
-            return getFloatyByTag(tag)?.isAddedToWindow == true
-        }
-    }
 
 }
+*/

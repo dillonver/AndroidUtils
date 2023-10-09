@@ -1,5 +1,6 @@
 package com.android.example.ui.test
 
+import android.view.Gravity
 import androidx.core.view.isVisible
 import com.android.example.R
 import com.android.example.base.BaseBindingActivity
@@ -10,7 +11,8 @@ import xyz.dcln.androidutils.utils.AppUtils.addAppStateListener
 import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.LogUtils.logI
 import xyz.dcln.androidutils.utils.ToastUtils.toastShort
-import xyz.dcln.androidutils.view.Floaty
+import xyz.dcln.androidutils.utils.FloatyUtils
+import xyz.dcln.androidutils.view.window.Floaty
 
 
 class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
@@ -42,7 +44,7 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
         viewBinding.tvCancel.setOnClickListener {
             Floaty.cancelByTag(myTag)
 
-            // Floaty.cancelAll()
+            // FloatyUtils.cancelAll()
             // finish()
 
         }
@@ -52,9 +54,9 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                 Floaty.create(this@FloatyTestActivity, tag = myTag, reuse = false) {
                     setLifecycleListener(
                         onShow = {
-                            LogUtils.i(getFloatTag(), tag = "Floaty")
+                            LogUtils.i(getFloatTag(), tag = "FloatyUtils")
                         }, onHide = {
-                            LogUtils.i(getFloatTag(), tag = "Floaty")
+                            LogUtils.i(getFloatTag(), tag = "FloatyUtils")
                         })
 
                     setContentView(R.layout.dialog_test_a) {
@@ -70,11 +72,9 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                     }
                    // setAnimationStyle()
                     //setDisplayDuration(5*1000L)
-                    //setGravity(Gravity.TOP)
+                     setGravity(Gravity.CENTER)
                     //setWidth(ScreenUtils.getScreenWidth()*3/4)
                     //setHeight(ScreenUtils.getScreenHeight()*3/4)
-                    //setYOffset(100)
-                    //setXOffset(100)
                     //setBackgroundDimAmount(0f)
                     setDraggable(true)
                     setTouchThroughEnabled(true)
@@ -92,8 +92,8 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
             text = "复用弹窗2"
             setOnClickListener {
                 LogUtils.i(Floaty.isShowing(myTag))
-                val floaty= Floaty.getFloatyByTag(myTag)
-                floaty?.getContentView()?.apply {
+                val floatyUtils= Floaty.getFloatyByTag(myTag)
+                floatyUtils?.getContentView()?.apply {
                     val binding = DialogTestABinding.bind(this)
                     binding.tvAgree.apply {
                         text = "我不是同意"
