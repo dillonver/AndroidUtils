@@ -17,7 +17,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.WindowManager
-import android.view.WindowManager.BadTokenException
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import xyz.dcln.androidutils.R
@@ -544,7 +543,7 @@ class Floaty private constructor(
 
             // If gravity is not set, retrieve it from layout parameters
             if (windowParams?.gravity == Gravity.NO_GRAVITY) {
-                val gravity = when(layoutParams) {
+                val gravity = when (layoutParams) {
                     is FrameLayout.LayoutParams -> layoutParams.gravity
                     is LinearLayout.LayoutParams -> layoutParams.gravity
                     else -> FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY
@@ -560,7 +559,8 @@ class Floaty private constructor(
 
             layoutParams?.let {
                 if (windowParams?.width == WindowManager.LayoutParams.WRAP_CONTENT &&
-                    windowParams?.height == WindowManager.LayoutParams.WRAP_CONTENT) {
+                    windowParams?.height == WindowManager.LayoutParams.WRAP_CONTENT
+                ) {
                     // If the dialog width and height are set to WRAP_CONTENT, use layout's width and height
                     windowParams?.width = it.width
                     windowParams?.height = it.height
@@ -689,7 +689,6 @@ class Floaty private constructor(
             e.printStackTrace()
         }
     }
-
 
 
     /**
@@ -942,28 +941,22 @@ class Floaty private constructor(
             tag: String? = null,
             init: Floaty.() -> Unit
         ): Floaty {
-            var floatyTag = tag ?: generateUniqueTag()
-            val existingFloaty = getFloatyByTag(floatyTag)
-            return if (existingFloaty == null) {
-                if (instances.containsKey(floatyTag)) {
-                    floatyTag = generateUniqueTag()
-                }
-                val newFloaty = Floaty(context, floatyTag).apply(init)
-                instances[floatyTag] = WeakReference(newFloaty)
-                newFloaty
-            } else {
-                // Reuse the existing Floaty instance
-                existingFloaty.apply(init)
+            val floatyTag = tag?.takeUnless { instances.containsKey(it) } ?: generateUniqueTag()
+            return Floaty(context, floatyTag).apply(init).also {
+                instances[floatyTag] = WeakReference(it)
             }
         }
 
         private fun generateUniqueTag(): String {
-            return UUID.randomUUID().toString()
+            var newTag: String
+            do {
+                newTag = UUID.randomUUID().toString()
+            } while (instances.containsKey(newTag))
+            return newTag
         }
 
-        fun getFloatyByTag(tag: String): Floaty? {
-            return instances[tag]?.get()
-        }
+        fun getFloatyByTag(tag: String): Floaty? = instances[tag]?.get()
+
 
         fun cancelByTag(tag: String) {
             getFloatyByTag(tag)?.hide()
