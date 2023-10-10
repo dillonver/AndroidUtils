@@ -8,11 +8,9 @@ import com.android.example.databinding.ActivityTestBinding
 import com.android.example.databinding.DialogImEntranceBinding
 import com.android.example.databinding.DialogTestABinding
 import xyz.dcln.androidutils.utils.ActivityUtils.addTopActivityChangeListener
-import xyz.dcln.androidutils.utils.AppUtils
 import xyz.dcln.androidutils.utils.AppUtils.addAppStateListener
 import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.LogUtils.logI
-import xyz.dcln.androidutils.utils.ScreenUtils
 import xyz.dcln.androidutils.utils.ToastUtils.toastShort
 import xyz.dcln.androidutils.view.window.Floaty
 

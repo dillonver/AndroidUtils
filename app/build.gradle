@@ -66,10 +66,10 @@ android {
 
 dependencies {
     implementation project(':androidutils')
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.8.10"
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.8.22"
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'com.google.android.material:material:1.10.0'
     implementation 'androidx.annotation:annotation:1.6.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
@@ -77,5 +77,4 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
-    implementation 'com.github.getActivity:EasyWindow:10.3'
 }
