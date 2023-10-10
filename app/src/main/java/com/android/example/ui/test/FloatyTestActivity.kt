@@ -5,12 +5,14 @@ import androidx.core.view.isVisible
 import com.android.example.R
 import com.android.example.base.BaseBindingActivity
 import com.android.example.databinding.ActivityTestBinding
+import com.android.example.databinding.DialogImEntranceBinding
 import com.android.example.databinding.DialogTestABinding
 import xyz.dcln.androidutils.utils.ActivityUtils.addTopActivityChangeListener
 import xyz.dcln.androidutils.utils.AppUtils
 import xyz.dcln.androidutils.utils.AppUtils.addAppStateListener
 import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.LogUtils.logI
+import xyz.dcln.androidutils.utils.ScreenUtils
 import xyz.dcln.androidutils.utils.ToastUtils.toastShort
 import xyz.dcln.androidutils.view.window.Floaty
 
@@ -71,30 +73,27 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
 //                }.show()
 //
 //                return@setOnClickListener
-                Floaty.create(AppUtils.getApp(), tag = myTag) {
+                Floaty.create(this@FloatyTestActivity, tag = myTag) {
 
-                    this.setContentView(R.layout.dialog_test_a) {
-                        val binding = DialogTestABinding.bind(this)
-                        binding.tvAgree.apply {
+                    this.setContentView(R.layout.dialog_im_entrance) {
+                        val binding = DialogImEntranceBinding.bind(this)
+                        binding.ivGoConversationList.apply {
                             text = "我是同意"
-                            setOnClickListener { toastShort("点击了同意") }
+                            setOnClickListener { toastShort("ivGoConversationList") }
                         }
-                        binding.tvCancel.apply {
-                            text = "我是取消"
-                            setOnClickListener { hide() }
-                        }
+//
                     }
                     // setAnimationStyle()
                     //  setDuration(5*1000)
                     // setGravity(Gravity.TOP or Gravity.CENTER)
-                    //setWidth(ScreenUtils.getScreenWidth()*3/4)
-                    //setHeight(ScreenUtils.getScreenHeight()*3/4)
-                    //setBackgroundDimAmount(0f)
-                    setGravity(Gravity.START or Gravity.BOTTOM)
+//                     setWidth(ScreenUtils.getScreenWidth()*3/4)
+//                      setHeight(ScreenUtils.getScreenHeight()*3/4)
+//                    setBackgroundDimAmount(0.3f)
+                    setGravity(Gravity.END or Gravity.BOTTOM)
                     setXOffset(50)
                     setYOffset(110)
                     setDraggable()
-                    setOutsideTouchable(true)
+                   // setOutsideTouchable(true)
                     setLifecycleListener(onShow = {
                         toastShort("onShow")
                     }, onHide = { toastShort("onHide") })
