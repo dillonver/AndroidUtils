@@ -7,6 +7,7 @@ import com.android.example.base.BaseBindingActivity
 import com.android.example.databinding.ActivityTestBinding
 import com.android.example.databinding.DialogTestABinding
 import xyz.dcln.androidutils.utils.ActivityUtils.addTopActivityChangeListener
+import xyz.dcln.androidutils.utils.AppUtils
 import xyz.dcln.androidutils.utils.AppUtils.addAppStateListener
 import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.LogUtils.logI
@@ -70,7 +71,7 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
 //                }.show()
 //
 //                return@setOnClickListener
-                Floaty.create(this@FloatyTestActivity, tag = myTag) {
+                Floaty.create(AppUtils.getApp(), tag = myTag) {
 
                     this.setContentView(R.layout.dialog_test_a) {
                         val binding = DialogTestABinding.bind(this)
@@ -84,7 +85,7 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                         }
                     }
                     // setAnimationStyle()
-                     setDuration(5*1000)
+                   //  setDuration(5*1000)
                     // setGravity(Gravity.TOP or Gravity.CENTER)
                     //setWidth(ScreenUtils.getScreenWidth()*3/4)
                     //setHeight(ScreenUtils.getScreenHeight()*3/4)
@@ -95,9 +96,8 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                     setLifecycleListener(onShow = {
                         toastShort("onShow")
                     }, onHide = { toastShort("onHide") })
-//                    setDismissOnOutsideClick(false)
 
-                }.show()
+                }.showAsDropDown( viewBinding.layTest)
             }
 
         }

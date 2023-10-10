@@ -71,47 +71,7 @@ class Floaty private constructor(
 
 
     private var dismissOnOutsideClick: Boolean = true
-    /**
-     * 创建一个局部悬浮窗
-     */
-    constructor(activity: Activity, tag: String) : this(activity as Context, tag) {
-        val window = activity.window
-        val decorView = window.decorView
-        val params = activity.window.attributes
-        if (params.flags and WindowManager.LayoutParams.FLAG_FULLSCREEN != 0 || decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_FULLSCREEN != 0) {
-            // 如果当前 Activity 是全屏模式，那么需要添加这个标记，否则会导致 WindowManager 在某些机型上移动不到状态栏的位置上
-            // 如果不想让状态栏显示的时候把 WindowManager 顶下来，可以添加 FLAG_LAYOUT_IN_SCREEN，但是会导致软键盘无法调整窗口位置
-            addWindowFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            // 如果是 Android 9.0，则需要对刘海屏进行适配，否则也会导致 WindowManager 移动不到刘海屏的位置上面
-            setLayoutInDisplayCutoutMode(params.layoutInDisplayCutoutMode)
-        }
-        if (params.systemUiVisibility != 0) {
-            setSystemUiVisibility(params.systemUiVisibility)
-        }
-        if (decorView.systemUiVisibility != 0) {
-            mDecorView?.systemUiVisibility = decorView.systemUiVisibility
-        }
 
-        // 跟随 Activity 的生命周期
-        mLifecycle = ActivityWindowLifecycle(this, activity)
-        // 注册 Activity 生命周期监听
-        mLifecycle?.register()
-    }
-
-    /**
-     * 创建一个全局悬浮窗
-     */
-    constructor(application: Application, tag: String) : this(application as Context, tag) {
-
-        // 设置成全局的悬浮窗，注意需要先申请悬浮窗权限
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            setWindowType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
-        } else {
-            setWindowType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT)
-        }
-    }
 
     init {
         mDecorView = WindowLayout(context)
@@ -122,11 +82,45 @@ class Floaty private constructor(
         windowParams?.width = WindowManager.LayoutParams.WRAP_CONTENT
         windowParams?.format = PixelFormat.TRANSLUCENT
         windowParams?.packageName = context.packageName
-        // 设置触摸外层布局（除 WindowManager 外的布局，默认是 WindowManager 显示的时候外层不可触摸）
         // 需要注意的是设置了 FLAG_NOT_TOUCH_MODAL 必须要设置 FLAG_NOT_FOCUSABLE，否则就会导致用户按返回键无效
         windowParams?.flags = (WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+        when (context) {
+            is Activity -> {
+                val window = context.window
+                val decorView = window.decorView
+                val params = context.window.attributes
+                if (params.flags and WindowManager.LayoutParams.FLAG_FULLSCREEN != 0 || decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_FULLSCREEN != 0) {
+                    // 如果当前 Activity 是全屏模式，那么需要添加这个标记，否则会导致 WindowManager 在某些机型上移动不到状态栏的位置上
+                    // 如果不想让状态栏显示的时候把 WindowManager 顶下来，可以添加 FLAG_LAYOUT_IN_SCREEN，但是会导致软键盘无法调整窗口位置
+                    addWindowFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    // 如果是 Android 9.0，则需要对刘海屏进行适配，否则也会导致 WindowManager 移动不到刘海屏的位置上面
+                    setLayoutInDisplayCutoutMode(params.layoutInDisplayCutoutMode)
+                }
+                if (params.systemUiVisibility != 0) {
+                    setSystemUiVisibility(params.systemUiVisibility)
+                }
+                if (decorView.systemUiVisibility != 0) {
+                    mDecorView?.systemUiVisibility = decorView.systemUiVisibility
+                }
 
+                // 跟随 Activity 的生命周期
+                mLifecycle = ActivityWindowLifecycle(this, context)
+                // 注册 Activity 生命周期监听
+                mLifecycle?.register()
+            }
+
+            is Application -> {
+                // 设置成全局的悬浮窗，注意需要先申请悬浮窗权限
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    setWindowType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
+                } else {
+                    setWindowType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT)
+                }
+            }
+        }
     }
 
 
@@ -134,10 +128,10 @@ class Floaty private constructor(
      * 设置悬浮窗宽度
      */
     fun setWidth(width: Int): Floaty {
-        windowParams!!.width = width
-        if (mDecorView!!.childCount > 0) {
-            val contentView = mDecorView!!.getChildAt(0)
-            val layoutParams = contentView.layoutParams
+        windowParams?.width = width
+        if ((mDecorView?.childCount ?: 0) > 0) {
+            val contentView = mDecorView?.getChildAt(0)
+            val layoutParams = contentView?.layoutParams
             if (layoutParams != null && layoutParams.width != width) {
                 layoutParams.width = width
                 contentView.layoutParams = layoutParams
@@ -147,14 +141,15 @@ class Floaty private constructor(
         return this
     }
 
+
     /**
      * 设置悬浮窗高度
      */
     fun setHeight(height: Int): Floaty {
-        windowParams!!.height = height
-        if (mDecorView!!.childCount > 0) {
-            val contentView = mDecorView!!.getChildAt(0)
-            val layoutParams = contentView.layoutParams
+        windowParams?.height = height
+        if ((mDecorView?.childCount ?: 0) > 0) {
+            val contentView = mDecorView?.getChildAt(0)
+            val layoutParams = contentView?.layoutParams
             if (layoutParams != null && layoutParams.height != height) {
                 layoutParams.height = height
                 contentView.layoutParams = layoutParams
@@ -163,6 +158,7 @@ class Floaty private constructor(
         postUpdate()
         return this
     }
+
 
     /**
      * 设置悬浮窗显示的重心
@@ -221,35 +217,45 @@ class Floaty private constructor(
      * @param amount        阴影强度值，填写 0 到 1 之间的值
      */
     fun setBackgroundDimAmount(amount: Float): Floaty {
-        require(!(amount < 0 || amount > 1)) { "amount must be a value between 0 and 1" }
-        windowParams!!.dimAmount = amount
+        require(amount in 0f..1f) { "amount must be a value between 0 and 1" }
+
+        windowParams?.dimAmount = amount
         val flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND
+
         if (amount != 0f) {
             addWindowFlags(flags)
         } else {
             removeWindowFlags(flags)
         }
+
         postUpdate()
         return this
     }
+
 
     /**
      * 添加窗口标记
      */
     fun addWindowFlags(flags: Int): Floaty {
-        windowParams?.flags = windowParams!!.flags or flags
-        postUpdate()
+        windowParams?.let { params ->
+            params.flags = params.flags or flags
+            postUpdate()
+        }
         return this
     }
+
 
     /**
      * 移除窗口标记
      */
     fun removeWindowFlags(flags: Int): Floaty {
-        windowParams?.flags = windowParams!!.flags and flags.inv()
-        postUpdate()
+        windowParams?.let { params ->
+            params.flags = params.flags and flags.inv()
+            postUpdate()
+        }
         return this
     }
+
 
     /**
      * 设置窗口标记
@@ -264,8 +270,9 @@ class Floaty private constructor(
      * 是否存在某个窗口标记
      */
     fun hasWindowFlags(flags: Int): Boolean {
-        return windowParams!!.flags and flags != 0
+        return windowParams?.flags?.and(flags) != 0
     }
+
 
     /**
      * 设置悬浮窗的显示类型
@@ -495,9 +502,9 @@ class Floaty private constructor(
             }
         }
         if (mScreenOrientationMonitor == null) {
-            mScreenOrientationMonitor = ScreenOrientationMonitor(context!!.resources.configuration)
+            mScreenOrientationMonitor = ScreenOrientationMonitor(context.resources.configuration)
         }
-        mScreenOrientationMonitor!!.registerCallback(context!!, this)
+        mScreenOrientationMonitor!!.registerCallback(context, this)
         return this
     }
 
@@ -514,61 +521,57 @@ class Floaty private constructor(
     }
 
 
-
-    /**
-     * 设置内容布局
-     */
     fun setContentView(id: Int, initView: View.() -> Unit = {}): Floaty {
-        return setContentView(LayoutInflater.from(context).inflate(id, mDecorView, false), initView)
+        val view = LayoutInflater.from(context).inflate(id, mDecorView, false)
+        return setContentView(view, initView)
     }
 
     fun setContentView(newView: View, initView: View.() -> Unit = {}): Floaty {
-        if (mDecorView!!.childCount > 0) {
-            mDecorView!!.removeAllViews()
-        }
-        contentView = newView.apply(initView)
-        mDecorView?.addView(contentView)
-        val layoutParams = contentView?.layoutParams
-        if (layoutParams is MarginLayoutParams) {
-            // 清除 Margin，因为 WindowManager 没有这一属性可以设置，并且会跟根布局相冲突
-            layoutParams.topMargin = 0
-            layoutParams.bottomMargin = 0
-            layoutParams.leftMargin = 0
-            layoutParams.rightMargin = 0
-        }
+        mDecorView?.let { decorView ->
+            if (decorView.childCount > 0) {
+                decorView.removeAllViews()
+            }
 
-        // 如果当前没有设置重心，就自动获取布局重心
-        if (windowParams?.gravity == Gravity.NO_GRAVITY) {
-            if (layoutParams is FrameLayout.LayoutParams) {
-                val gravity = layoutParams.gravity
-                if (gravity != FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY) {
-                    windowParams?.gravity = gravity
-                }
-            } else if (layoutParams is LinearLayout.LayoutParams) {
-                val gravity = layoutParams.gravity
-                if (gravity != FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY) {
-                    windowParams?.gravity = gravity
-                }
+            val contentView = newView.apply(initView)
+            decorView.addView(contentView)
+
+            val layoutParams = contentView.layoutParams
+
+            (layoutParams as? MarginLayoutParams)?.apply {
+                // Clear margins as WindowManager lacks this property and it might conflict with the root layout
+                setMargins(0, 0, 0, 0)
             }
+
+            // If gravity is not set, retrieve it from layout parameters
             if (windowParams?.gravity == Gravity.NO_GRAVITY) {
-                // 默认重心是居中
-                windowParams?.gravity = Gravity.CENTER
+                val gravity = when(layoutParams) {
+                    is FrameLayout.LayoutParams -> layoutParams.gravity
+                    is LinearLayout.LayoutParams -> layoutParams.gravity
+                    else -> FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY
+                }
+
+                if (gravity != FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY) {
+                    windowParams?.gravity = gravity
+                } else {
+                    // Default gravity is CENTER
+                    windowParams?.gravity = Gravity.CENTER
+                }
             }
-        }
-        if (layoutParams != null) {
-            if (windowParams?.width == WindowManager.LayoutParams.WRAP_CONTENT &&
-                windowParams?.height == WindowManager.LayoutParams.WRAP_CONTENT
-            ) {
-                // 如果当前 Dialog 的宽高设置了自适应，就以布局中设置的宽高为主
-                windowParams?.width = layoutParams.width
-                windowParams?.height = layoutParams.height
-            } else {
-                // 如果当前通过代码动态设置了宽高，则以动态设置的为主
-                layoutParams.width = windowParams!!.width
-                layoutParams.height = windowParams!!.height
+
+            layoutParams?.let {
+                if (windowParams?.width == WindowManager.LayoutParams.WRAP_CONTENT &&
+                    windowParams?.height == WindowManager.LayoutParams.WRAP_CONTENT) {
+                    // If the dialog width and height are set to WRAP_CONTENT, use layout's width and height
+                    windowParams?.width = it.width
+                    windowParams?.height = it.height
+                } else {
+                    // If width and height are set programmatically, use these values
+                    it.width = windowParams?.width ?: WindowManager.LayoutParams.WRAP_CONTENT
+                    it.height = windowParams?.height ?: WindowManager.LayoutParams.WRAP_CONTENT
+                }
             }
+            postUpdate()
         }
-        postUpdate()
         return this
     }
 
@@ -587,101 +590,102 @@ class Floaty private constructor(
         xOff: Int = 0,
         yOff: Int = 0
     ) {
-        var showGravity = showGravity
-        require(!(mDecorView!!.childCount == 0 || windowParams == null)) { "WindowParams and view cannot be empty" }
+        requireNotNull(mDecorView) { "mDecorView cannot be null" }
+        requireNotNull(windowParams) { "windowParams cannot be null" }
+        require(mDecorView!!.childCount > 0) { "mDecorView must have child views" }
+
+        var adjustedGravity = showGravity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            // 适配布局反方向
-            showGravity = Gravity.getAbsoluteGravity(
+            adjustedGravity = Gravity.getAbsoluteGravity(
                 showGravity,
                 anchorView.resources.configuration.layoutDirection
             )
         }
+
         val anchorViewLocation = IntArray(2)
         anchorView.getLocationOnScreen(anchorViewLocation)
         val windowVisibleRect = Rect()
         anchorView.getWindowVisibleDisplayFrame(windowVisibleRect)
-        windowParams?.gravity = Gravity.TOP or Gravity.START
-        windowParams?.x = anchorViewLocation[0] - windowVisibleRect.left + xOff
-        windowParams?.y = anchorViewLocation[1] - windowVisibleRect.top + yOff
-        if (showGravity and Gravity.LEFT == Gravity.LEFT) {
-            var rootViewWidth = mDecorView!!.width
-            if (rootViewWidth == 0) {
-                rootViewWidth = mDecorView!!.measuredWidth
+
+        windowParams?.apply {
+            gravity = Gravity.TOP or Gravity.START
+            x = anchorViewLocation[0] - windowVisibleRect.left + xOff
+            y = anchorViewLocation[1] - windowVisibleRect.top + yOff
+
+            fun ensureMeasured(decorView: View): Int {
+                var size = decorView.width.takeIf { it > 0 } ?: decorView.measuredWidth
+                if (size <= 0) {
+                    decorView.measure(
+                        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+                    )
+                    size = decorView.measuredWidth
+                }
+                return size
             }
-            if (rootViewWidth == 0) {
-                mDecorView!!.measure(
-                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-                )
-                rootViewWidth = mDecorView!!.measuredWidth
+
+            if (adjustedGravity and Gravity.LEFT == Gravity.LEFT) {
+                x -= ensureMeasured(mDecorView!!)
+            } else if (adjustedGravity and Gravity.RIGHT == Gravity.RIGHT) {
+                x += anchorView.width
             }
-            windowParams!!.x -= rootViewWidth
-        } else if (showGravity and Gravity.RIGHT == Gravity.RIGHT) {
-            windowParams!!.x += anchorView.width
-        }
-        if (showGravity and Gravity.TOP == Gravity.TOP) {
-            var rootViewHeight = mDecorView!!.height
-            if (rootViewHeight == 0) {
-                rootViewHeight = mDecorView!!.measuredHeight
+
+            if (adjustedGravity and Gravity.TOP == Gravity.TOP) {
+                y -= ensureMeasured(mDecorView!!)
+            } else if (adjustedGravity and Gravity.BOTTOM == Gravity.BOTTOM) {
+                y += anchorView.height
             }
-            if (rootViewHeight == 0) {
-                mDecorView!!.measure(
-                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-                )
-                rootViewHeight = mDecorView!!.measuredHeight
-            }
-            windowParams!!.y -= rootViewHeight
-        } else if (showGravity and Gravity.BOTTOM == Gravity.BOTTOM) {
-            windowParams!!.y += anchorView.height
         }
         show()
     }
+
 
     /**
      * 显示悬浮窗
      */
     fun show() {
-        require(!(mDecorView?.childCount == 0 || windowParams == null)) { "WindowParams and view cannot be empty" }
+        requireNotNull(windowParams) { "WindowParams cannot be null" }
+        requireNotNull(mDecorView) { "mDecorView cannot be null" }
+        require(mDecorView!!.childCount > 0) { "mDecorView must have child views" }
 
-        // 如果当前已经显示则进行更新
+        // If it's already showing, update and return
         if (isShowing) {
             update()
             return
         }
-        if (context is Activity) {
-            val activity = context as Activity
+
+        // If the context is an Activity, ensure it is not finishing or destroyed
+        (context as? Activity)?.let { activity ->
             if (activity.isFinishing || Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && activity.isDestroyed) {
                 return
             }
         }
+
         try {
-            // 如果 View 已经被添加的情况下，就先把 View 移除掉
+            // If mDecorView has already been added, remove it first
             if (mDecorView?.parent != null) {
                 windowManager?.removeViewImmediate(mDecorView)
             }
+
+            // Add mDecorView to the window manager
             windowManager?.addView(mDecorView, windowParams)
-            // 当前已经显示
+
+            // Set showing status
             isShowing = true
-            // 如果当前限定了显示时长
+
+            // Handle duration
             if (mDuration != 0) {
                 removeCallbacks(this)
                 postDelayed(this, mDuration.toLong())
             }
-            // 如果设置了拖拽规则
+
+            // Start draggable if set
             draggable?.start(this)
 
-            // 回调监听
-            onShow?.let { it(this) }
-        } catch (e: NullPointerException) {
-            // 如果这个 View 对象被重复添加到 WindowManager 则会抛出异常
-            // java.lang.IllegalStateException: View has already been added to the window manager.
-            e.printStackTrace()
-        } catch (e: IllegalStateException) {
-            e.printStackTrace()
-        } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-        } catch (e: BadTokenException) {
+            // Invoke onShow callback if set
+            onShow?.invoke(this)
+        } catch (e: Exception) {
+            // Log various potential exceptions
             e.printStackTrace()
         }
     }
@@ -728,11 +732,7 @@ class Floaty private constructor(
 
                 // 移除销毁任务
                 removeCallbacks(this)
-            } catch (e: NullPointerException) {
-                e.printStackTrace()
-            } catch (e: IllegalArgumentException) {
-                e.printStackTrace()
-            } catch (e: IllegalStateException) {
+            } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
                 // 当前没有显示
@@ -904,6 +904,7 @@ class Floaty private constructor(
 
     private var onShow: ((Floaty) -> Unit)? = null
     private var onHide: ((Floaty) -> Unit)? = null
+
     /**
      * 窗口生命周期监听
      */
@@ -914,7 +915,6 @@ class Floaty private constructor(
         this.onShow = onShow
         this.onHide = onHide
     }
-
 
 
     companion object {
