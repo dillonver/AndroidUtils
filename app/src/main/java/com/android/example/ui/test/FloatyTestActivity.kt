@@ -85,19 +85,21 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                         }
                     }
                     // setAnimationStyle()
-                   //  setDuration(5*1000)
+                    //  setDuration(5*1000)
                     // setGravity(Gravity.TOP or Gravity.CENTER)
                     //setWidth(ScreenUtils.getScreenWidth()*3/4)
                     //setHeight(ScreenUtils.getScreenHeight()*3/4)
                     //setBackgroundDimAmount(0f)
-                    setGravity(Gravity.START or Gravity.TOP)
-                      setDraggable()
+                    setGravity(Gravity.START or Gravity.BOTTOM)
+                    setXOffset(50)
+                    setYOffset(110)
+                    setDraggable()
                     setOutsideTouchable(true)
                     setLifecycleListener(onShow = {
                         toastShort("onShow")
                     }, onHide = { toastShort("onHide") })
 
-                }.showAsDropDown( viewBinding.layTest)
+                }.show()
             }
 
         }
