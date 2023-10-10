@@ -37,14 +37,14 @@ internal class ActivityWindowLifecycle(
     override fun onActivityPaused(activity: Activity) {
         // 一定要在 onPaused 方法中销毁掉，如果放在 onDestroyed 方法中还是有一定几率会导致内存泄露
         if (mActivity === activity && mActivity!!.isFinishing) {
-            mWindow?.recycle()
+            mWindow?.hide()
         }
     }
 
     override fun onActivityDestroyed(activity: Activity) {
         if (mActivity === activity) {
             mActivity = null
-            mWindow?.recycle()
+            mWindow?.hide()
             mWindow = null
         }
     }

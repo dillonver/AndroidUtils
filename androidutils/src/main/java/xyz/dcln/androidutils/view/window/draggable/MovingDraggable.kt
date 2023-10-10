@@ -1,6 +1,7 @@
 package xyz.dcln.androidutils.view.window.draggable
 
 import android.annotation.SuppressLint
+import android.graphics.Rect
 import android.view.MotionEvent
 import android.view.View
 
@@ -11,6 +12,7 @@ class MovingDraggable : BaseDraggable() {
 
     /** 触摸移动标记  */
     private var mMoveTouch = false
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(v: View, event: MotionEvent): Boolean {
         when (event.action) {
@@ -42,7 +44,7 @@ class MovingDraggable : BaseDraggable() {
                 }
             }
 
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> return mMoveTouch
+            MotionEvent.ACTION_UP ,MotionEvent.ACTION_CANCEL -> return mMoveTouch
             else -> {}
         }
         return false

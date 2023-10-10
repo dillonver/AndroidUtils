@@ -6,7 +6,6 @@ import com.android.example.R
 import com.android.example.base.BaseBindingActivity
 import com.android.example.databinding.ActivityTestBinding
 import com.android.example.databinding.DialogTestABinding
-import com.hjq.window.EasyWindow
 import xyz.dcln.androidutils.utils.ActivityUtils.addTopActivityChangeListener
 import xyz.dcln.androidutils.utils.AppUtils.addAppStateListener
 import xyz.dcln.androidutils.utils.LogUtils
@@ -51,11 +50,11 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
         viewBinding.tvTest3.apply {
             text = "常规弹窗"
             setOnClickListener {
-             //    EasyWindow.with(this@FloatyTestActivity).apply {
+//                Floaty.with(this@FloatyTestActivity).apply {
 //                    setContentView(R.layout.dialog_test_a)
 //                    setText( R.id.tvAgree, "我是同意")
 //                    setText( R.id.tvCancel, "我是取消")
-//                    setGravity(Gravity.END or Gravity.CENTER)
+//                    setGravity(Gravity.TOP or Gravity.CENTER)
 //                    // 设置成可拖拽的
 //                     setDraggable()
 //                    // 设置显示时长
@@ -73,7 +72,7 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
 //                return@setOnClickListener
                 Floaty.create(this@FloatyTestActivity, tag = myTag) {
 
-                   this.setContentView(R.layout.dialog_test_a) {
+                    this.setContentView(R.layout.dialog_test_a) {
                         val binding = DialogTestABinding.bind(this)
                         binding.tvAgree.apply {
                             text = "我是同意"
@@ -81,18 +80,21 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                         }
                         binding.tvCancel.apply {
                             text = "我是取消"
-                            setOnClickListener { recycle() }
+                            setOnClickListener { hide() }
                         }
                     }
-                   // setAnimationStyle()
-                    //setDisplayDuration(5*1000L)
+                    // setAnimationStyle()
+                     setDuration(5*1000)
                     // setGravity(Gravity.TOP or Gravity.CENTER)
                     //setWidth(ScreenUtils.getScreenWidth()*3/4)
                     //setHeight(ScreenUtils.getScreenHeight()*3/4)
                     //setBackgroundDimAmount(0f)
-                    setGravity(Gravity.END or Gravity.CENTER)
-                    setDraggable()
+                    setGravity(Gravity.START or Gravity.TOP)
+                      setDraggable()
                     setOutsideTouchable(true)
+                    setLifecycleListener(onShow = {
+                        toastShort("onShow")
+                    }, onHide = { toastShort("onHide") })
 //                    setDismissOnOutsideClick(false)
 
                 }.show()
@@ -101,13 +103,16 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
         }
 
         viewBinding.tvTest2.apply {
+            setOnClickListener {
+                toastShort("12321321")
+            }
         }
 
         viewBinding.tvTest1.apply {
             text = "复用弹窗2"
             setOnClickListener {
                 LogUtils.i(Floaty.isShowing(myTag))
-                val floaty= Floaty.getFloatyByTag(myTag)
+                val floaty = Floaty.getFloatyByTag(myTag)
                 floaty?.contentView?.apply {
                     val binding = DialogTestABinding.bind(this)
                     binding.tvAgree.apply {

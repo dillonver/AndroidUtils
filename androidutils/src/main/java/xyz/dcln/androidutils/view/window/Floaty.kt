@@ -62,8 +62,6 @@ class Floaty private constructor(
     /** 自定义拖动处理  */
     private var draggable: BaseDraggable? = null
 
-    /** 吐司显示和取消监听  */
-    private var mListener: OnWindowLifecycle? = null
 
     /** 屏幕旋转监听  */
     private var mScreenOrientationMonitor: ScreenOrientationMonitor? = null
@@ -71,6 +69,8 @@ class Floaty private constructor(
     /** 更新任务  */
     private val mUpdateRunnable = Runnable { update() }
 
+
+    private var dismissOnOutsideClick: Boolean = true
     /**
      * 创建一个局部悬浮窗
      */
@@ -513,13 +513,6 @@ class Floaty private constructor(
         return this
     }
 
-    /**
-     * 设置生命周期监听
-     */
-    fun setOnToastLifecycle(listener: OnWindowLifecycle?): Floaty {
-        mListener = listener
-        return this
-    }
 
 
     /**
@@ -679,7 +672,7 @@ class Floaty private constructor(
             draggable?.start(this)
 
             // 回调监听
-            mListener?.onWindowShow(this)
+            onShow?.let { it(this) }
         } catch (e: NullPointerException) {
             // 如果这个 View 对象被重复添加到 WindowManager 则会抛出异常
             // java.lang.IllegalStateException: View has already been added to the window manager.
@@ -693,35 +686,7 @@ class Floaty private constructor(
         }
     }
 
-    /**
-     * 销毁悬浮窗
-     */
-    fun cancel() {
-        if (!isShowing) {
-            return
-        }
-        try {
 
-            // 如果当前 WindowManager 没有附加这个 View 则会抛出异常
-            // java.lang.IllegalArgumentException: View not attached to window manager
-            windowManager?.removeViewImmediate(mDecorView)
-
-            // 移除销毁任务
-            removeCallbacks(this)
-
-            // 回调监听
-            mListener?.onWindowCancel(this)
-        } catch (e: NullPointerException) {
-            e.printStackTrace()
-        } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-        } catch (e: IllegalStateException) {
-            e.printStackTrace()
-        } finally {
-            // 当前没有显示
-            isShowing = false
-        }
-    }
 
     /**
      * 延迟更新悬浮窗
@@ -754,15 +719,30 @@ class Floaty private constructor(
     /**
      * 回收释放
      */
-    fun recycle() {
+    fun hide() {
         if (isShowing) {
-            cancel()
+            try {
+                // 如果当前 WindowManager 没有附加这个 View 则会抛出异常
+                // java.lang.IllegalArgumentException: View not attached to window manager
+                windowManager?.removeViewImmediate(mDecorView)
+
+                // 移除销毁任务
+                removeCallbacks(this)
+            } catch (e: NullPointerException) {
+                e.printStackTrace()
+            } catch (e: IllegalArgumentException) {
+                e.printStackTrace()
+            } catch (e: IllegalStateException) {
+                e.printStackTrace()
+            } finally {
+                // 当前没有显示
+                isShowing = false
+            }
         }
-        mScreenOrientationMonitor?.unregisterCallback(context!!)
-        mListener?.onWindowRecycle(this)
+        mScreenOrientationMonitor?.unregisterCallback(context)
+        onHide?.let { it(this) }
         // 反注册 Activity 生命周期
         mLifecycle?.unregister()
-        mListener = null
         mDecorView = null
         windowManager = null
         windowParams = null
@@ -888,7 +868,7 @@ class Floaty private constructor(
      * [Runnable]
      */
     override fun run() {
-        cancel()
+        hide()
     }
 
     /**
@@ -922,25 +902,20 @@ class Floaty private constructor(
         fun onTouch(window: Floaty?, view: View, event: MotionEvent?): Boolean
     }
 
+    private var onShow: ((Floaty) -> Unit)? = null
+    private var onHide: ((Floaty) -> Unit)? = null
     /**
      * 窗口生命周期监听
      */
-    interface OnWindowLifecycle {
-        /**
-         * 显示回调
-         */
-        fun onWindowShow(window: Floaty?) {}
-
-        /**
-         * 消失回调
-         */
-        fun onWindowCancel(window: Floaty?) {}
-
-        /**
-         * 回收回调
-         */
-        fun onWindowRecycle(window: Floaty?) {}
+    fun setLifecycleListener(
+        onShow: ((Floaty) -> Unit)? = null,
+        onHide: ((Floaty) -> Unit)? = null
+    ): Floaty = apply {
+        this.onShow = onShow
+        this.onHide = onHide
     }
+
+
 
     companion object {
 
@@ -991,13 +966,13 @@ class Floaty private constructor(
         }
 
         fun cancelByTag(tag: String) {
-            getFloatyByTag(tag)?.recycle()
+            getFloatyByTag(tag)?.hide()
         }
 
 
         fun cancelAll() {
             for (weakRef in instances.values) {
-                weakRef.get()?.recycle()
+                weakRef.get()?.hide()
             }
             instances.clear()
         }
