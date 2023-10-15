@@ -1,4 +1,4 @@
-package xyz.dcln.androidutils.view.window.draggable;
+package xyz.dcln.androidutils.view.floaty.draggable;
 
 import android.annotation.SuppressLint;
 import android.content.res.Resources;
@@ -8,7 +8,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 
-import xyz.dcln.androidutils.view.window.Floaty;
+import xyz.dcln.androidutils.view.floaty.Floaty;
 
 public abstract class BaseDraggable implements View.OnTouchListener {
 

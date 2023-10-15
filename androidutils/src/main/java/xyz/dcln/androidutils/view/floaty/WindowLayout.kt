@@ -1,4 +1,4 @@
-package xyz.dcln.androidutils.view.window
+package xyz.dcln.androidutils.view.floaty
 
 import android.content.Context
 import android.util.AttributeSet

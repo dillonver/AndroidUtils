@@ -12,7 +12,7 @@ import xyz.dcln.androidutils.utils.AppUtils.addAppStateListener
 import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.LogUtils.logI
 import xyz.dcln.androidutils.utils.ToastUtils.toastShort
-import xyz.dcln.androidutils.view.window.Floaty
+import xyz.dcln.androidutils.view.floaty.Floaty
 
 
 class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {

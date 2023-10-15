@@ -1,4 +1,4 @@
-package xyz.dcln.androidutils.view.window
+package xyz.dcln.androidutils.view.floaty
 
 import android.app.Activity
 import android.app.Application
@@ -20,9 +20,9 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import xyz.dcln.androidutils.R
-import xyz.dcln.androidutils.view.window.ScreenOrientationMonitor.OnScreenOrientationCallback
-import xyz.dcln.androidutils.view.window.draggable.BaseDraggable
-import xyz.dcln.androidutils.view.window.draggable.MovingDraggable
+import xyz.dcln.androidutils.view.floaty.ScreenOrientationMonitor.OnScreenOrientationCallback
+import xyz.dcln.androidutils.view.floaty.draggable.BaseDraggable
+import xyz.dcln.androidutils.view.floaty.draggable.MovingDraggable
 import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap

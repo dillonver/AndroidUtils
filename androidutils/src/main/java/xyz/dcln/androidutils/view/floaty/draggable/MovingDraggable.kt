@@ -1,7 +1,6 @@
-package xyz.dcln.androidutils.view.window.draggable
+package xyz.dcln.androidutils.view.floaty.draggable
 
 import android.annotation.SuppressLint
-import android.graphics.Rect
 import android.view.MotionEvent
 import android.view.View
 
