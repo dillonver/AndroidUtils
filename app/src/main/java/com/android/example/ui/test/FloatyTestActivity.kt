@@ -12,6 +12,8 @@ import xyz.dcln.androidutils.utils.AppUtils.addAppStateListener
 import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.LogUtils.logI
 import xyz.dcln.androidutils.utils.ToastUtils.toastShort
+import xyz.dcln.androidutils.utils.ext.setCornerRadiusAndBackground
+import xyz.dcln.androidutils.view.dialog.DfDialog
 import xyz.dcln.androidutils.view.floaty.Floaty
 
 
@@ -26,7 +28,6 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
         addAppStateListener { logI("App isForeground:$it") }
 
         addTopActivityChangeListener { logI("TopActivity is:" + it.javaClass.simpleName) }
-
 
     }
 
@@ -91,7 +92,7 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                     setXOffset(50)
                     setYOffset(110)
                     setDraggable()
-                   // setOutsideTouchable(true)
+                    // setOutsideTouchable(true)
                     setLifecycleListener(onShow = {
                         toastShort("onShow")
                     }, onHide = { toastShort("onHide") })
@@ -103,7 +104,19 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
 
         viewBinding.tvTest2.apply {
             setOnClickListener {
-                toastShort("12321321")
+                DfDialog.create(this@FloatyTestActivity) {
+                    setContentView(R.layout.dialog_im_entrance) {
+                        val binding = DialogImEntranceBinding.bind(this)
+                        binding.ivGoConversationList.apply {
+                            setOnClickListener { toastShort("ivGoConversationList") }
+                        }
+                    }
+                    setCanceledOnTouchOutside(false)
+
+
+                }
+                    .show()
+
             }
         }
 

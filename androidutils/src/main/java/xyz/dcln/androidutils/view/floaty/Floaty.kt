@@ -20,6 +20,7 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import xyz.dcln.androidutils.R
+import xyz.dcln.androidutils.utils.ScreenUtils
 import xyz.dcln.androidutils.view.floaty.ScreenOrientationMonitor.OnScreenOrientationCallback
 import xyz.dcln.androidutils.view.floaty.draggable.BaseDraggable
 import xyz.dcln.androidutils.view.floaty.draggable.MovingDraggable
@@ -27,10 +28,10 @@ import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-@Suppress("unused")
+//window实现，支持APP、Activity级悬浮弹窗操作，可拖动，但无法点击外部关闭弹窗
 class Floaty private constructor(
     private val context: Context,
-    val tag: String
+    private val tag: String
 ) : Runnable, OnScreenOrientationCallback {
     val handler = Handler(Looper.getMainLooper())
 
@@ -127,12 +128,17 @@ class Floaty private constructor(
      * 设置悬浮窗宽度
      */
     fun setWidth(width: Int): Floaty {
-        windowParams?.width = width
+        val targetWidth = if (width > ScreenUtils.getScreenWidth()) {
+            ScreenUtils.getScreenWidth()
+        } else {
+            width
+        }
+        windowParams?.width = targetWidth
         if ((mDecorView?.childCount ?: 0) > 0) {
             val contentView = mDecorView?.getChildAt(0)
             val layoutParams = contentView?.layoutParams
-            if (layoutParams != null && layoutParams.width != width) {
-                layoutParams.width = width
+            if (layoutParams != null && layoutParams.width != targetWidth) {
+                layoutParams.width = targetWidth
                 contentView.layoutParams = layoutParams
             }
         }
@@ -145,12 +151,17 @@ class Floaty private constructor(
      * 设置悬浮窗高度
      */
     fun setHeight(height: Int): Floaty {
+        val targetHeight = if (height > ScreenUtils.getScreenHeight()) {
+            ScreenUtils.getScreenHeight()
+        } else {
+            height
+        }
         windowParams?.height = height
         if ((mDecorView?.childCount ?: 0) > 0) {
             val contentView = mDecorView?.getChildAt(0)
             val layoutParams = contentView?.layoutParams
-            if (layoutParams != null && layoutParams.height != height) {
-                layoutParams.height = height
+            if (layoutParams != null && layoutParams.height != targetHeight) {
+                layoutParams.height = targetHeight
                 contentView.layoutParams = layoutParams
             }
         }
