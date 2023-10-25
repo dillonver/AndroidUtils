@@ -768,9 +768,7 @@ class Floaty private constructor(
          * 获取根布局（可能为空）
          */
         get() = mDecorView
-    var contentView: View? = if (mDecorView!!.childCount == 0) {
-        null
-    } else mDecorView!!.getChildAt(0)
+
 
     /**
      * 根据 ViewId 获取 View
@@ -834,6 +832,11 @@ class Floaty private constructor(
         view?.isClickable = true
         view?.setOnClickListener(ViewClickWrapper(this, listener))
         return this
+    }
+
+    fun getFloatyContentView(): View? {
+        if (mDecorView == null || mDecorView?.childCount == 0) return null
+        return mDecorView?.getChildAt(0)
     }
 
     /**
@@ -981,12 +984,12 @@ class Floaty private constructor(
             instances.clear()
         }
 
-        fun getContentView(tag: String): View? {
-            return getFloatyByTag(tag)?.contentView
-        }
-
         fun isShowing(tag: String): Boolean {
             return getFloatyByTag(tag)?.isShowing == true
+        }
+
+        fun getContentView(tag: String): View? {
+            return getFloatyByTag(tag)?.getFloatyContentView()
         }
 
     }

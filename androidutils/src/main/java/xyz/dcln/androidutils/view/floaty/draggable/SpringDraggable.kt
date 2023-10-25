@@ -145,7 +145,7 @@ class SpringDraggable @JvmOverloads constructor(
         animator.duration = duration
         animator.addUpdateListener { animation: ValueAnimator ->
             updateLocation(
-                animation.animatedValue as Int,
+                (animation.animatedValue as Float).toInt(),
                 y.toInt()
             )
         }
