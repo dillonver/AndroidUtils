@@ -124,17 +124,17 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
             text = "复用弹窗2"
             setOnClickListener {
                 LogUtils.i(Floaty.isShowing(myTag))
-                val floaty = Floaty.getFloatyByTag(myTag)
-                floaty?.contentView?.apply {
-                    val binding = DialogTestABinding.bind(this)
-                    binding.tvAgree.apply {
-                        text = "我不是同意"
-                        setOnClickListener { toastShort("我不是同意") }
-                    }
-                    binding.tvCancel.apply {
-                        text = "我不是取消"
-                    }
-                }
+//                val floaty = Floaty.getFloatyByTag(myTag)
+//                floaty?.contentView?.apply {
+//                    val binding = DialogTestABinding.bind(this)
+//                    binding.tvAgree.apply {
+//                        text = "我不是同意"
+//                        setOnClickListener { toastShort("我不是同意") }
+//                    }
+//                    binding.tvCancel.apply {
+//                        text = "我不是取消"
+//                    }
+//                }
             }
         }
 
