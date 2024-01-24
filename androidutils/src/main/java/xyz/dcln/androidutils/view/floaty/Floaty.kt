@@ -52,7 +52,7 @@ class Floaty private constructor(
     private var isShowing = false
 
     /** 悬浮窗显示时长  */
-    private var mDuration = 0
+    private var mDuration = 0L
 
     /** Toast 生命周期管理  */
     private var mLifecycle: ActivityWindowLifecycle? = null
@@ -521,11 +521,11 @@ class Floaty private constructor(
     /**
      * 限定显示时长
      */
-    fun setDuration(duration: Int): Floaty {
+    fun setDuration(duration: Long): Floaty {
         mDuration = duration
-        if (isShowing && mDuration != 0) {
+        if (isShowing && mDuration != 0L) {
             removeCallbacks(this)
-            postDelayed(this, mDuration.toLong())
+            postDelayed(this, mDuration)
         }
         return this
     }
@@ -685,7 +685,7 @@ class Floaty private constructor(
             isShowing = true
 
             // Handle duration
-            if (mDuration != 0) {
+            if (mDuration != 0L) {
                 removeCallbacks(this)
                 postDelayed(this, mDuration.toLong())
             }
