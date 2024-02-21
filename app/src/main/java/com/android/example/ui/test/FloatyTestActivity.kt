@@ -52,32 +52,13 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
         viewBinding.tvTest3.apply {
             text = "常规弹窗"
             setOnClickListener {
-//                Floaty.with(this@FloatyTestActivity).apply {
-//                    setContentView(R.layout.dialog_test_a)
-//                    setText( R.id.tvAgree, "我是同意")
-//                    setText( R.id.tvCancel, "我是取消")
-//                    setGravity(Gravity.TOP or Gravity.CENTER)
-//                    // 设置成可拖拽的
-//                     setDraggable()
-//                    // 设置显示时长
-//                   // setDuration(1000)
-//                    // 设置动画样式
-//                    //setAnimStyle(android.R.style.Animation_Translucent)
-//                    // 设置外层是否能被触摸
-//                     setOutsideTouchable(true)
-//                    // 设置窗口背景阴影强度
-//                    //setBackgroundDimAmount(0.5f)
-//
-//
-//                }.show()
-//
-//                return@setOnClickListener
+                Floaty.cancelByTag(myTag, false)
+
                 Floaty.create(this@FloatyTestActivity, tag = myTag) {
 
                     this.setContentView(R.layout.dialog_im_entrance) {
                         val binding = DialogImEntranceBinding.bind(this)
                         binding.ivGoConversationList.apply {
-                            text = "我是同意"
                             setOnClickListener { toastShort("ivGoConversationList") }
                         }
 //
@@ -93,9 +74,13 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
                     setYOffset(110)
                     setDraggable()
                     // setOutsideTouchable(true)
-                    setLifecycleListener(onShow = {
-                        toastShort("onShow")
-                    }, onHide = { toastShort("onHide") })
+                    setLifecycleListener(
+                        onShow = {
+                            LogUtils.e("Floaty onShow：" + it.selfTag())
+                        }, onHide = {
+                            LogUtils.e("Floaty onHide：" + it.selfTag())
+                        }
+                    )
 
                 }.show()
             }
@@ -104,18 +89,29 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
 
         viewBinding.tvTest2.apply {
             setOnClickListener {
-                DfDialog.create(this@FloatyTestActivity) {
-                    setContentView(R.layout.dialog_im_entrance) {
+                Floaty.create(this@FloatyTestActivity, tag = myTag + "888") {
+
+                    this.setContentView(R.layout.dialog_im_entrance) {
                         val binding = DialogImEntranceBinding.bind(this)
                         binding.ivGoConversationList.apply {
+                            text = "我是同意"
                             setOnClickListener { toastShort("ivGoConversationList") }
                         }
                     }
-                    setCanceledOnTouchOutside(false)
 
+                    setGravity(Gravity.END or Gravity.BOTTOM)
+                    setXOffset(50)
+                    setYOffset(110)
+                    setDraggable()
+                    setLifecycleListener(
+                        onShow = {
+                            LogUtils.e("Floaty onShow：" + it.selfTag())
+                        }, onHide = {
+                            LogUtils.e("Floaty onHide" + it.selfTag())
+                        }
+                    )
 
-                }
-                    .show()
+                }.show()
 
             }
         }
@@ -125,7 +121,7 @@ class FloatyTestActivity : BaseBindingActivity<ActivityTestBinding>() {
             setOnClickListener {
                 LogUtils.i(Floaty.isShowing(myTag))
                 val floaty = Floaty.getFloatyByTag(myTag)
-                floaty?.contentView?.apply {
+                floaty?.getFloatyContentView()?.apply {
                     val binding = DialogTestABinding.bind(this)
                     binding.tvAgree.apply {
                         text = "我不是同意"
