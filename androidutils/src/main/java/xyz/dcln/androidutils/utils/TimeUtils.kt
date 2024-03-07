@@ -7,6 +7,7 @@ import kotlin.math.abs
 object TimeUtils {
 
     private const val DEFAULT_PATTERN = "yyyy-MM-dd HH:mm:ss"
+
     enum class TimeUnit(val factor: Long) {
         MILLISECONDS(1),
         SECONDS(1000),
@@ -14,8 +15,10 @@ object TimeUtils {
         HOURS(3_600_000),
         DAYS(86_400_000);
 
-        fun convert(sourceDuration: Long, sourceUnit: TimeUnit) = sourceDuration * sourceUnit.factor / factor
+        fun convert(sourceDuration: Long, sourceUnit: TimeUnit) =
+            sourceDuration * sourceUnit.factor / factor
     }
+
     // 获取安全的日期格式
     fun getSafeDateFormat(pattern: String = DEFAULT_PATTERN): SimpleDateFormat =
         SimpleDateFormat(pattern, Locale.getDefault()).apply { isLenient = false }
@@ -71,7 +74,8 @@ object TimeUtils {
     fun getNowMills(): Long = System.currentTimeMillis()
 
     // 获取当前时间字符串
-    fun getNowString(pattern: String = DEFAULT_PATTERN): String = millis2String(getNowMills(), pattern)
+    fun getNowString(pattern: String = DEFAULT_PATTERN): String =
+        millis2String(getNowMills(), pattern)
 
     // 获取当前 Date
     fun getNowDate(): Date = Date()
@@ -83,23 +87,85 @@ object TimeUtils {
     fun getFitTimeSpanByNow(time: Long): String = getFitTimeSpan(time, getNowMills())
 
     // 获取友好型与当前时间的差 (例如：1小时前，1天前)
-    fun getFriendlyTimeSpanByNow(time: Long, isChinese: Boolean = true): String {
+    private fun getFriendlyTimeChineseSpanByNow(
+        time: Long,
+        showYearAfter3day: Boolean = true, //是否需要显示年份
+        showTimeAfter3day: Boolean = true //是否需要显示时间
+    ): String {
         val span = getNowMills() - time
-        return if (isChinese) {
-            when {
-                span < 60 * 1000 -> "刚刚"
-                span < 60 * 60 * 1000 -> "${span / (60 * 1000)}分钟前"
-                span < 24 * 60 * 60 * 1000 -> "${span / (60 * 60 * 1000)}小时前"
-                else -> "${span / (24 * 60 * 60 * 1000)}天前"
-            }
+        val patternP1 = "yyyy年"
+        val patternP2 = "MM月dd日"
+        val patternP3 = " HH:mm"
+        val targetPattern = if (showYearAfter3day) {
+            patternP1
         } else {
-            when {
-                span < 60 * 1000 -> "Just now"
-                span < 60 * 60 * 1000 -> "${span / (60 * 1000)} minutes ago"
-                span < 24 * 60 * 60 * 1000 -> "${span / (60 * 60 * 1000)} hours ago"
-                else -> "${span / (24 * 60 * 60 * 1000)} days ago"
-            }
+            ""
+        } + patternP2 + if (showTimeAfter3day) {
+            patternP3
+        } else {
+            ""
         }
+
+        return when {
+            span < 60 * 1000 -> "刚刚"
+            span < 60 * 60 * 1000 -> "${span / (60 * 1000)}分钟前"
+            span < 24 * 60 * 60 * 1000 -> "${span / (60 * 60 * 1000)}小时前"
+            span < 3 * 24 * 60 * 60 * 1000 -> "${span / (24 * 60 * 60 * 1000)}天前"
+            else -> SimpleDateFormat(targetPattern, Locale.CHINESE).format(Date(time))
+        }
+
+    }
+
+    private fun getFriendlyTimeDefaultSpanByNow(
+        time: Long,
+        showYearAfter3day: Boolean = true, //是否需要显示年份
+        showTimeAfter3day: Boolean = true //是否需要显示时间
+    ): String {
+        val span = getNowMills() - time
+        val patternP1 = "yyyy-"
+        val patternP2 = "MM-dd"
+        val patternP3 = " HH:mm"
+        val targetPattern = if (showYearAfter3day) {
+            patternP1
+        } else {
+            ""
+        } + patternP2 + if (showTimeAfter3day) {
+            patternP3
+        } else {
+            ""
+        }
+
+        return when {
+            span < 60 * 1000 -> "Just now"
+            span < 60 * 60 * 1000 -> "${span / (60 * 1000)} minutes ago"
+            span < 24 * 60 * 60 * 1000 -> "${span / (60 * 60 * 1000)} hours ago"
+            span < 3 * 24 * 60 * 60 * 1000 -> "${span / (24 * 60 * 60 * 1000)} days ago"
+            else -> SimpleDateFormat(targetPattern, Locale.ENGLISH).format(Date(time))
+        }
+
+    }
+
+
+    fun getFriendlyTimeSpanByNow(
+        time: Long,
+        isChinese: Boolean = true,
+        showYearAfter3day: Boolean = true, //是否需要显示年份
+        showTimeAfter3day: Boolean = true //是否需要显示时间
+    ): String {
+        return if (isChinese) {
+            getFriendlyTimeChineseSpanByNow(
+                time = time,
+                showYearAfter3day = showYearAfter3day,
+                showTimeAfter3day = showTimeAfter3day
+            )
+        } else {
+            getFriendlyTimeDefaultSpanByNow(
+                time = time,
+                showYearAfter3day = showYearAfter3day,
+                showTimeAfter3day = showTimeAfter3day
+            )
+        }
+
     }
 
 
@@ -107,7 +173,8 @@ object TimeUtils {
     fun getMillis(time: Long, span: Long): Long = time + span
 
     // 获取与给定时间等于时间差的时间字符串
-    fun getString(time: Long, span: Long, pattern: String = DEFAULT_PATTERN): String = millis2String(getMillis(time, span), pattern)
+    fun getString(time: Long, span: Long, pattern: String = DEFAULT_PATTERN): String =
+        millis2String(getMillis(time, span), pattern)
 
     // 获取与给定时间等于时间差的 Date
     fun getDate(time: Long, span: Long): Date = millis2Date(getMillis(time, span))
@@ -116,7 +183,8 @@ object TimeUtils {
     fun getMillisByNow(span: Long): Long = getMillis(getNowMills(), span)
 
     // 获取与当前时间等于时间差的时间字符串
-    fun getStringByNow(span: Long, pattern: String = DEFAULT_PATTERN): String = millis2String(getMillisByNow(span), pattern)
+    fun getStringByNow(span: Long, pattern: String = DEFAULT_PATTERN): String =
+        millis2String(getMillisByNow(span), pattern)
 
     // 获取与当前时间等于时间差的 Date
     fun getDateByNow(span: Long): Date = millis2Date(getMillisByNow(span))
@@ -125,7 +193,9 @@ object TimeUtils {
     fun isToday(time: Long): Boolean {
         val cal1 = Calendar.getInstance().apply { timeInMillis = time }
         val cal2 = Calendar.getInstance()  // 默认即为当前时间
-        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) && cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) && cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(
+            Calendar.DAY_OF_YEAR
+        )
     }
 
     // 判断是否闰年
@@ -141,7 +211,8 @@ object TimeUtils {
 
     // 获取美式星期
     fun getUSWeek(time: Long): String {
-        val weekDays = arrayOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+        val weekDays =
+            arrayOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
         val cal = Calendar.getInstance().apply { timeInMillis = time }
         val dayIndex = cal.get(Calendar.DAY_OF_WEEK) - 1
         return weekDays[dayIndex]
@@ -164,14 +235,28 @@ object TimeUtils {
 
     // 获取生肖
     fun getChineseZodiac(year: Int): String {
-        val zodiacs = arrayOf("鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪")
+        val zodiacs =
+            arrayOf("鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪")
         return zodiacs[(year - 4) % 12]
     }
 
     // 获取星座
     fun getZodiac(month: Int, day: Int): String {
         val cutOffDates = arrayOf(20, 19, 21, 20, 21, 22, 23, 23, 23, 24, 23, 22)
-        val zodiacs = arrayOf("摩羯", "水瓶", "双鱼", "白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手")
+        val zodiacs = arrayOf(
+            "摩羯",
+            "水瓶",
+            "双鱼",
+            "白羊",
+            "金牛",
+            "双子",
+            "巨蟹",
+            "狮子",
+            "处女",
+            "天秤",
+            "天蝎",
+            "射手"
+        )
 
         return if (day < cutOffDates[month - 1]) zodiacs[month - 1] else zodiacs[month % 12]
     }

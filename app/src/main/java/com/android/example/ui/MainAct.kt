@@ -16,6 +16,7 @@ import com.android.example.ui.test.RegexUtilsTestAct
 import com.android.example.ui.test.WifiTransferActivity
 import com.android.example.ui.test.WifiUtilsTestAct
 import xyz.dcln.androidutils.utils.ActivityUtils
+import xyz.dcln.androidutils.utils.VibrateUtils
 
 
 class MainAct : BaseBindingActivity<ActivityMainBinding>() {
@@ -69,6 +70,10 @@ class MainAct : BaseBindingActivity<ActivityMainBinding>() {
 
         viewBinding.tvWifiUtilsTest.setOnClickListener {
             ActivityUtils.startActivity<WifiUtilsTestAct>()
+        }
+
+        viewBinding.tvVibrateUtilsTest.setOnClickListener {
+            VibrateUtils.vibrate(duration = 300, interval = 300, count = 999)
         }
     }
 
