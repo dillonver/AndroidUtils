@@ -6,65 +6,128 @@ import java.lang.reflect.Method
 /**
  * Description:
  * Author: Dillon
- * Date: 2023/7/9 4:06
+ * Date: 2024/3/8 11:18
  */
 object ReflectUtils {
-    private var targetClass: Class<*>? = null
 
     /**
-     * 设置要反射的类
-     * @param clazz 要反射的类
-     * @return 当前 ReflectUtils 对象
+     * 通过类名获取Class对象。
+     * @param className 完整的类名，包含包路径。
+     * @return Class对象，如果找不到对应的类则返回null。
      */
-    fun reflect(clazz: Class<*>): ReflectUtils {
-        targetClass = clazz
-        return this
-    }
-
-    /**
-     * 实例化反射对象
-     * @return 反射对象的实例
-     */
-    fun newInstance(vararg args: Any?): Any? {
-        return targetClass?.getDeclaredConstructor()?.newInstance(*args)
-    }
-
-    /**
-     * 设置反射的字段
-     * @param fieldName 字段名称
-     * @return 反射得到的字段对象，若字段不存在则返回 null
-     */
-    fun field(fieldName: String): Field? {
+    fun getClassByName(className: String): Class<*>? {
         return try {
-            targetClass?.getDeclaredField(fieldName)
+            Class.forName(className)
+        } catch (e: ClassNotFoundException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    /**
+     * 通过反射创建类的一个新实例。
+     * @param classObject 类的Class对象。
+     * @param args 构造函数的参数。
+     * @return 创建的类实例，如果创建失败则返回null。
+     */
+    fun createInstance(classObject: Class<*>, vararg args: Any?): Any? {
+        return try {
+            val constructor = classObject.getDeclaredConstructor(*args.map { it?.javaClass ?: Any::class.java }.toTypedArray())
+            constructor.isAccessible = true
+            constructor.newInstance(*args)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    /**
+     * 获取指定的字段对象。
+     * @param classObject 类的Class对象。
+     * @param fieldName 字段名称。
+     * @return Field对象，如果找不到对应的字段则返回null。
+     */
+    fun getField(classObject: Class<*>, fieldName: String): Field? {
+        return try {
+            val field = classObject.getDeclaredField(fieldName)
+            field.isAccessible = true
+            field
         } catch (e: NoSuchFieldException) {
+            e.printStackTrace()
             null
         }
     }
 
     /**
-     * 设置反射的方法
-     * @param methodName 方法名称
-     * @param parameterTypes 方法参数类型
-     * @return 反射得到的方法对象，若方法不存在则返回 null
+     * 获取指定的方法对象。
+     * @param classObject 类的Class对象。
+     * @param methodName 方法名称。
+     * @param parameterTypes 方法参数类型数组，没有参数则传入空数组。
+     * @return Method对象，如果找不到对应的方法则返回null。
      */
-    fun method(methodName: String, vararg parameterTypes: Class<*>): Method? {
+    fun getMethod(classObject: Class<*>, methodName: String, vararg parameterTypes: Class<*>): Method? {
         return try {
-            targetClass?.getDeclaredMethod(methodName, *parameterTypes)
+            val method = classObject.getDeclaredMethod(methodName, *parameterTypes)
+            method.isAccessible = true
+            method
         } catch (e: NoSuchMethodException) {
+            e.printStackTrace()
             null
         }
     }
 
     /**
-     * 获取反射想要获取的值
-     * @param obj 目标对象
-     * @param fieldName 字段名称
-     * @return 反射得到的字段的值，若字段不存在或获取失败则返回 null
+     * 获取对象或类的字段值。
+     * @param classObject 类的Class对象。
+     * @param obj 对象实例，静态字段时传入null。
+     * @param fieldName 字段名称。
+     * @return 字段值，如果获取失败则返回null。
      */
-    fun get(obj: Any?, fieldName: String): Any? {
-        val field = field(fieldName)
-        field?.isAccessible = true
-        return field?.get(obj)
+    fun getTarget(classObject: Class<*>, obj: Any?, fieldName: String): Any? {
+        return try {
+            val field = classObject.getDeclaredField(fieldName)
+            field.isAccessible = true
+            field.get(obj)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    /**
+     * 设置对象或类的字段值。
+     * @param classObject 类的Class对象。
+     * @param obj 对象实例，静态字段时传入null。
+     * @param fieldName 字段名称。
+     * @param value 新的字段值。
+     */
+    fun setTarget(classObject: Class<*>, obj: Any?, fieldName: String, value: Any?) {
+        try {
+            val field = classObject.getDeclaredField(fieldName)
+            field.isAccessible = true
+            field.set(obj, value)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * 调用对象或类的方法。
+     * @param classObject 类的Class对象。
+     * @param methodName 方法名称。
+     * @param parameterTypes 方法参数类型数组。
+     * @param obj 对象实例，静态方法时传入null。
+     * @param args 方法参数。
+     * @return 方法调用的返回值，如果调用失败则返回null。
+     */
+    fun invokeMethod(classObject: Class<*>, methodName: String, parameterTypes: Array<Class<*>>, obj: Any?, vararg args: Any?): Any? {
+        return try {
+            val method = classObject.getDeclaredMethod(methodName, *parameterTypes)
+            method.isAccessible = true
+            method.invoke(obj, *args)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 }

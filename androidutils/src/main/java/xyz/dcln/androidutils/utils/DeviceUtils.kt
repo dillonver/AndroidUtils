@@ -119,4 +119,22 @@ object DeviceUtils {
     // 判断是否同一设备
     fun isSameDevice(deviceUniqueId: String): Boolean =
         getUniqueDeviceId() == deviceUniqueId
+
+
+    /**
+     * check the system is harmony os
+     *
+     * @return true if it is harmony os
+     */
+    fun isHarmonyOS(): Boolean {
+        try {
+            val clz = ReflectUtils.getClassByName("com.huawei.system.BuildEx") ?: return false
+            val method = ReflectUtils.getMethod(clz, "getOsBrand") ?: return false
+            return "harmony" == method.invoke(clz)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return false
+    }
+
 }

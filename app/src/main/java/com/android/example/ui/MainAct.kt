@@ -16,6 +16,8 @@ import com.android.example.ui.test.RegexUtilsTestAct
 import com.android.example.ui.test.WifiTransferActivity
 import com.android.example.ui.test.WifiUtilsTestAct
 import xyz.dcln.androidutils.utils.ActivityUtils
+import xyz.dcln.androidutils.utils.DeviceUtils
+import xyz.dcln.androidutils.utils.LogUtils
 import xyz.dcln.androidutils.utils.VibrateUtils
 
 
@@ -27,7 +29,7 @@ class MainAct : BaseBindingActivity<ActivityMainBinding>() {
     @RequiresApi(Build.VERSION_CODES.R)
     override fun initListener() {
         super.initListener()
-
+        LogUtils.e("isHarmonyOS：" + DeviceUtils.isHarmonyOS())
         viewBinding.tvFloatieTest.setOnClickListener {
             ActivityUtils.startActivity<FloatyTestActivity>()
         }
