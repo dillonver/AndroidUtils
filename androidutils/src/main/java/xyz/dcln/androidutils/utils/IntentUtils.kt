@@ -50,7 +50,7 @@ object IntentUtils {
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace() // 可以根据需要将异常信息记录到日志中
+            e.printStackTrace()
             null // 在发生异常时返回 null
         }
     }

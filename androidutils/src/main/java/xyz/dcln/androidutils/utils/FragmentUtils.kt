@@ -49,30 +49,35 @@ object FragmentUtils {
         @Suppress("UNCHECKED_CAST")
         override fun getValue(thisRef: Fragment, property: KProperty<*>): T? {
             val args = thisRef.arguments ?: return null
-            return when (clazz) {
-                String::class.java -> args.getString(key) as T?
-                Int::class.java -> args.getInt(key) as T?
-                Boolean::class.java -> args.getBoolean(key) as T?
-                Float::class.java -> args.getFloat(key) as T?
-                Long::class.java -> args.getLong(key) as T?
-                Double::class.java -> args.getDouble(key) as T?
-                Parcelable::class.java -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        args.getParcelable(key, clazz as Class<Parcelable>) as T?
-                    } else {
-                        @Suppress("DEPRECATION")
-                        args.getParcelable(key) as T?
+            return try {
+                when (clazz) {
+                    String::class.java -> args.getString(key) as T?
+                    Int::class.java -> args.getInt(key) as T?
+                    Boolean::class.java -> args.getBoolean(key) as T?
+                    Float::class.java -> args.getFloat(key) as T?
+                    Long::class.java -> args.getLong(key) as T?
+                    Double::class.java -> args.getDouble(key) as T?
+                    Parcelable::class.java -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            args.getParcelable(key, clazz as Class<Parcelable>) as T?
+                        } else {
+                            @Suppress("DEPRECATION")
+                            args.getParcelable(key) as T?
+                        }
                     }
-                }
-                java.io.Serializable::class.java -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        args.getSerializable(key, clazz) as T?
-                    } else {
-                        @Suppress("DEPRECATION")
-                        args.getSerializable(key) as T?
+                    java.io.Serializable::class.java -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            args.getSerializable(key, clazz) as T?
+                        } else {
+                            @Suppress("DEPRECATION")
+                            args.getSerializable(key) as T?
+                        }
                     }
+                    else -> args.getString(key)?.let { Gson().fromJson(it, clazz) }
                 }
-                else -> args.getString(key)?.let { Gson().fromJson(it, clazz) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null // 在发生异常时返回 null
             }
         }
 
@@ -95,6 +100,7 @@ object FragmentUtils {
             }
         }
     }
+
 
     // 辅助函数：创建委托
     inline fun <reified T : Any> fragmentArgument(key: String): FragmentArgumentDelegate<T> {
