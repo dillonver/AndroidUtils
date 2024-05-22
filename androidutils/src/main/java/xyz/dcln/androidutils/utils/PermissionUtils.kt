@@ -529,6 +529,7 @@ object PermissionUtils {
                 AppUtils.getAppContext().applicationInfo.uid, AppUtils.getAppContext().packageName
             )
         } else {
+            @Suppress("DEPRECATION")
             appOps.checkOpNoThrow(
                 AppOpsManager.OPSTR_GET_USAGE_STATS,
                 AppUtils.getAppContext().applicationInfo.uid, AppUtils.getAppContext().packageName
