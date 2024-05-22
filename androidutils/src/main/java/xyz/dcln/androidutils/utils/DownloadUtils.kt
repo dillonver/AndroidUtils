@@ -8,6 +8,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.database.Cursor
 import android.net.Uri
+import android.os.Build
+import android.text.TextUtils
+import androidx.annotation.RequiresApi
 import java.io.File
 
 object DownloadUtils {
@@ -90,6 +93,7 @@ object DownloadUtils {
     /**
      * 开始下载文件
      */
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private fun download() {
         // 创建下载请求
         val request = createDownloadRequest()
@@ -108,8 +112,15 @@ object DownloadUtils {
         }
 
         // 注册广播接收者，监听下载完成的广播
-        AppUtils.getApp()
-            .registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            AppUtils.getApp()
+                .registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+                    Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            AppUtils.getApp()
+                .registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+        }
+
     }
 
 

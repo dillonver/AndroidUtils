@@ -1,8 +1,14 @@
 package xyz.dcln.androidutils.utils
 
+import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -142,6 +148,61 @@ object AssetsUtils {
             outputStream.close()
         } catch (e: IOException) {
             e.printStackTrace()
+        }
+    }
+
+
+    fun saveImageFromAssetsToPictures(
+        context: Context,
+        fileName: String,
+        callback: ((result: Boolean, msg: String?, uri: Uri?) -> Unit)? = null
+    ) {
+        try {
+            val assetManager = context.assets
+            val inputStream = assetManager.open(fileName)
+            val imageBitmap = BitmapFactory.decodeStream(inputStream)
+
+            val resolver = context.contentResolver
+            val contentValues = ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
+                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+            }
+
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // For Android 10 and above
+                val imageUri =
+                    resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                imageUri?.let { uri ->
+                    resolver.openOutputStream(uri)?.use { outputStream ->
+                        imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                    }
+                    callback?.invoke(true, "Success", uri)
+                }
+            } else {
+                // For Android 10 below
+                val picturesDir =
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                val destFile = File(picturesDir, fileName)
+
+                FileOutputStream(destFile).use { outputStream ->
+                    imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                }
+
+                val targetUri = UriUtils.file2Uri(destFile)
+
+                callback?.invoke(true, "Fail", targetUri)
+                @Suppress("DEPRECATION")
+                val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE).apply {
+                    data = targetUri
+                }
+                context.sendBroadcast(intent)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // 处理异常，例如提示用户保存失败
+            callback?.invoke(false, "Error", null)
         }
     }
 }

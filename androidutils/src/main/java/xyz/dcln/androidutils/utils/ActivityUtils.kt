@@ -469,4 +469,15 @@ object ActivityUtils {
             }
         })
     }
+
+    /**
+     * 从Intent中获取值的通用方法
+     * @param intent 传入的Intent
+     * @param key 参数的键
+     * @return 返回对应键的值
+     */
+    inline fun <reified T> getValueFromIntent(intent: Intent, key: String): T? {
+        return IntentUtils.getValueFromIntent(intent, key)
+    }
+
 }

@@ -1,5 +1,6 @@
 package xyz.dcln.androidutils.utils
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.ActivityInfo
@@ -72,6 +73,7 @@ object ScreenUtils {
             } else {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
             }
+            @Suppress("DEPRECATION")
             window.decorView.systemUiVisibility =
                 if (fullScreen) {
                     (View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
@@ -109,6 +111,7 @@ object ScreenUtils {
     /**
      * Set the screen to portrait.
      */
+    @SuppressLint("SourceLockedOrientationActivity")
     fun Activity.setPortrait() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
     }
