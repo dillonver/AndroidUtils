@@ -1,5 +1,6 @@
 package xyz.dcln.androidutils.utils
 
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -9,6 +10,7 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Base64
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
@@ -33,7 +35,7 @@ object ImageUtils {
         imageFile: File?,
     ) {
         if (imageFile == null) {
-            LogUtils.e( "imageFile == null")
+            LogUtils.e("imageFile == null")
             return
         }
         // 通知媒体库更新

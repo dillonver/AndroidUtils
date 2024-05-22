@@ -13,6 +13,8 @@ import android.graphics.drawable.shapes.RoundRectShape
 import android.os.Build
 import android.view.View
 import android.view.ViewOutlineProvider
+import android.view.animation.Animation
+import android.view.animation.Transformation
 import android.widget.TextView
 
 /**
@@ -116,4 +118,116 @@ private fun getBackgroundDrawableShader(
         android.graphics.Shader.TileMode.CLAMP,
         android.graphics.Shader.TileMode.CLAMP
     )
+}
+
+/**
+ * 扩展函数，用于展开View，并添加动画效果
+ *
+ * @param aniDuration 动画持续时间，默认为300毫秒
+ * @param startCallback 展开动画开始时的回调函数
+ * @param endCallback 展开动画结束时的回调函数
+ * @param errorCallback 错误或异常回调
+ */
+fun View.expand(
+    aniDuration: Long = 300L,
+    startCallback: (() -> Unit)? = null,
+    endCallback: (() -> Unit)? = null,
+    errorCallback: ((reason: String) -> Unit)? = null
+) {
+    // 如果View已经可见，则直接返回
+    if (visibility == View.VISIBLE) {
+        //可见，表示已经展开
+        errorCallback?.invoke("Error: had expand")
+        return
+    }
+
+    try {
+        // 测量View的大小
+        measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        val targetHeight = measuredHeight
+        val animation = object : Animation() {
+            var isAnimationStarted = false
+            var isAnimationEnded = false
+
+            override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                // 根据插值计算高度
+                layoutParams.height = (targetHeight * interpolatedTime).toInt()
+                requestLayout()
+                if (!isAnimationStarted && interpolatedTime > 0.01f) {
+                    // 设置View可见，并执行开始回调
+                    visibility = View.VISIBLE
+                    startCallback?.invoke()
+                    isAnimationStarted = true
+                }
+                if (!isAnimationEnded && interpolatedTime == 1f) {
+                    // 执行结束回调
+                    endCallback?.invoke()
+                    isAnimationEnded = true
+                }
+            }
+        }
+        animation.duration = aniDuration
+        startAnimation(animation)
+    } catch (e: Exception) {
+        errorCallback?.invoke(e.message ?: "Exception: unknown")
+    }
+
+}
+
+/**
+ * 扩展函数，用于折叠View，并添加动画效果
+ *
+ * @param aniDuration 动画持续时间，默认为300毫秒
+ * @param startCallback 折叠动画开始时的回调函数
+ * @param endCallback 折叠动画结束时的回调函数
+ * @param errorCallback 错误或异常回调
+ */
+fun View.collapse(
+    aniDuration: Long = 300L,
+    startCallback: (() -> Unit)? = null,
+    endCallback: (() -> Unit)? = null,
+    errorCallback: ((reason: String) -> Unit)? = null
+
+) {
+    // 如果View不可见，则直接返回
+    if (visibility != View.VISIBLE) {
+        //不可见，表示已经折叠
+        errorCallback?.invoke("Error: had collapse")
+        return
+    }
+    try {
+        val initialHeight = measuredHeight
+        val animation = object : Animation() {
+            var isAnimationStarted = false
+            var isAnimationEnded = false
+
+            override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                if (interpolatedTime == 1f) {
+                    // 设置View不可见，并执行结束回调
+                    visibility = View.GONE
+                    if (!isAnimationEnded) {
+                        endCallback?.invoke()
+                        isAnimationEnded = true
+                    }
+                } else {
+                    // 根据插值计算高度
+                    layoutParams.height = initialHeight - (initialHeight * interpolatedTime).toInt()
+                    requestLayout()
+                    if (!isAnimationStarted) {
+                        // 执行开始回调
+                        startCallback?.invoke()
+                        isAnimationStarted = true
+                    }
+
+                }
+            }
+        }
+        animation.duration = aniDuration
+        startAnimation(animation)
+    } catch (e: Exception) {
+        errorCallback?.invoke(e.message ?: "Exception: unknown")
+    }
 }

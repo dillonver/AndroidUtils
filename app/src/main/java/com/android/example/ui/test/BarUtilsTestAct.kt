@@ -6,6 +6,7 @@ import com.android.example.base.BaseBindingActivity
 import com.android.example.databinding.ActivityTestBinding
 import xyz.dcln.androidutils.utils.BarUtils
 import xyz.dcln.androidutils.utils.LogUtils
+import xyz.dcln.androidutils.utils.ReflectUtils
 
 
 class BarUtilsTestAct : BaseBindingActivity<ActivityTestBinding>() {

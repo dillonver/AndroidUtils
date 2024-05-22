@@ -133,7 +133,7 @@
                 android:background="@color/black"
                 android:gravity="center"
                 android:padding="@dimen/dp_10"
-                android:text="FloatieTest"
+                android:text="FloatyTest"
                 android:textColor="@color/white" />
 
             <TextView
@@ -145,6 +145,17 @@
                 android:gravity="center"
                 android:padding="@dimen/dp_10"
                 android:text="WifiUtilsTest"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/tvVibrateUtilsTest"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_10"
+                android:background="@color/black"
+                android:gravity="center"
+                android:padding="@dimen/dp_10"
+                android:text="VibrateUtilsTest"
                 android:textColor="@color/white" />
         </LinearLayout>
 

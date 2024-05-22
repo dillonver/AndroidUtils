@@ -52,7 +52,7 @@ class Floaty private constructor(
     private var isShowing = false
 
     /** 悬浮窗显示时长  */
-    private var mDuration = 0
+    private var mDuration = 0L
 
     /** Toast 生命周期管理  */
     private var mLifecycle: ActivityWindowLifecycle? = null
@@ -521,11 +521,11 @@ class Floaty private constructor(
     /**
      * 限定显示时长
      */
-    fun setDuration(duration: Int): Floaty {
+    fun setDuration(duration: Long): Floaty {
         mDuration = duration
-        if (isShowing && mDuration != 0) {
+        if (isShowing && mDuration != 0L) {
             removeCallbacks(this)
-            postDelayed(this, mDuration.toLong())
+            postDelayed(this, mDuration)
         }
         return this
     }
@@ -685,7 +685,7 @@ class Floaty private constructor(
             isShowing = true
 
             // Handle duration
-            if (mDuration != 0) {
+            if (mDuration != 0L) {
                 removeCallbacks(this)
                 postDelayed(this, mDuration.toLong())
             }
@@ -733,7 +733,7 @@ class Floaty private constructor(
     /**
      * 回收释放
      */
-    fun hide() {
+    fun hide(withHideCallback: Boolean = true) {
         if (isShowing) {
             try {
                 // 如果当前 WindowManager 没有附加这个 View 则会抛出异常
@@ -750,7 +750,9 @@ class Floaty private constructor(
             }
         }
         mScreenOrientationMonitor?.unregisterCallback(context)
-        onHide?.let { it(this) }
+        if (withHideCallback) {
+            onHide?.let { it(this) }
+        }
         // 反注册 Activity 生命周期
         mLifecycle?.unregister()
         mDecorView = null
@@ -881,7 +883,7 @@ class Floaty private constructor(
      * [Runnable]
      */
     override fun run() {
-        hide()
+        hide(true)
     }
 
     /**
@@ -929,6 +931,9 @@ class Floaty private constructor(
         this.onHide = onHide
     }
 
+    fun selfTag(): String {
+        return tag
+    }
 
     companion object {
 
@@ -972,14 +977,22 @@ class Floaty private constructor(
         fun getFloatyByTag(tag: String): Floaty? = instances[tag]?.get()
 
 
-        fun cancelByTag(tag: String) {
-            getFloatyByTag(tag)?.hide()
+        fun cancelByTag(tag: String, withHideCallback: Boolean = true) {
+            getFloatyByTag(tag)?.hide(withHideCallback)
+        }
+
+        fun cancelByTagWithinCallback(tag: String, withHideCallback: Boolean) {
+            getFloatyByTag(tag)?.hide(true)
+        }
+
+        fun cancelByTagWithoutCallback(tag: String, withHideCallback: Boolean) {
+            getFloatyByTag(tag)?.hide(false)
         }
 
 
-        fun cancelAll() {
+        fun cancelAll(withHideCallback: Boolean = true) {
             for (weakRef in instances.values) {
-                weakRef.get()?.hide()
+                weakRef.get()?.hide(withHideCallback)
             }
             instances.clear()
         }
