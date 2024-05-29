@@ -38,6 +38,11 @@ object EncryptUtils {
         return md.digest(data)
     }
 
+    fun encryptMD5ToString(data: String?): String? {
+        if (data.isNullOrBlank()) return null
+        return encryptMD5ToString(data.toByteArray())
+    }
+
     fun encryptMD5ToString(data: ByteArray): String {
         val md = MessageDigest.getInstance("MD5")
         val digest = md.digest(data)
