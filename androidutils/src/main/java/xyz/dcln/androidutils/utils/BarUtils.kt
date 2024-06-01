@@ -48,6 +48,11 @@ object BarUtils {
         }
     }
 
+    //判断是否沉浸式状态栏
+    fun isImmersiveStatusBar(activity: Activity): Boolean {
+        return ActivityUtils.isImmersiveMode(activity)
+    }
+
     // 设置沉浸式状态栏
     fun setImmersiveStatusBar(activity: Activity) {
         activity.window.apply {
@@ -239,6 +244,7 @@ object BarUtils {
             window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
         }
     }
+
     /**
      * 设置导航栏是否可见
      */

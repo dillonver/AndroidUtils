@@ -6,10 +6,13 @@ import android.app.Activity
 import android.app.Application
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
+import android.view.View
 import android.view.Window
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
@@ -480,4 +483,24 @@ object ActivityUtils {
         return IntentUtils.getValueFromIntent(intent, key)
     }
 
+
+    /**
+     * 是否沉浸式状态栏
+     */
+    fun isImmersiveMode(activity: Activity): Boolean {
+        val window = activity.window
+        val systemUiVisibility = window.decorView.systemUiVisibility
+
+        val hasFullscreenFlag = (systemUiVisibility and View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) != 0
+        val hasStableFlag = (systemUiVisibility and View.SYSTEM_UI_FLAG_LAYOUT_STABLE) != 0
+        val isStatusBarTransparent = window.statusBarColor == Color.TRANSPARENT
+
+        val hasDrawsSystemBarBackgroundsFlag =
+            (window.attributes.flags and WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS) != 0
+        val noTranslucentStatusFlag =
+            (window.attributes.flags and WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS) == 0
+
+        return hasFullscreenFlag && hasStableFlag && isStatusBarTransparent &&
+                hasDrawsSystemBarBackgroundsFlag && noTranslucentStatusFlag
+    }
 }
