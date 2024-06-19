@@ -28,6 +28,7 @@ object FileUtils {
         return filePath?.takeIf { it.isNotBlank() }?.let { File(it) }
     }
 
+
     /**
      * 判断文件是否存在
      *
@@ -297,7 +298,11 @@ object FileUtils {
      * @return 文件列表
      */
     @JvmOverloads
-    fun listFilesInDir(dir: File?, isRecursive: Boolean, comparator: Comparator<File?>? = null): List<File?> {
+    fun listFilesInDir(
+        dir: File?,
+        isRecursive: Boolean,
+        comparator: Comparator<File?>? = null,
+    ): List<File?> {
         return dir?.takeIf { it.exists() && it.isDirectory }?.let {
             val files = mutableListOf<File?>()
             it.listFiles()?.forEach { file ->
@@ -310,7 +315,6 @@ object FileUtils {
     }
 
 
-
     /**
      * 列出指定目录下的文件，不遍历子目录
      */
@@ -318,7 +322,7 @@ object FileUtils {
         dir: File?,
         filter: FileFilter,
         isRecursive: Boolean = false,
-        comparator: Comparator<File?>? = null
+        comparator: Comparator<File?>? = null,
     ): List<File?> {
         val files = listFilesInDirWithFilterInner(dir, filter, isRecursive)
         comparator?.let { Collections.sort(files, it) }
@@ -328,14 +332,20 @@ object FileUtils {
     private fun listFilesInDirWithFilterInner(
         dir: File?,
         filter: FileFilter,
-        isRecursive: Boolean
+        isRecursive: Boolean,
     ): MutableList<File?> {
         val list = mutableListOf<File?>()
         if (!isDir(dir)) return list
         val files = dir!!.listFiles()
         files?.forEach { file ->
             if (filter.accept(file)) list.add(file)
-            if (isRecursive && file.isDirectory) list.addAll(listFilesInDirWithFilterInner(file, filter, true))
+            if (isRecursive && file.isDirectory) list.addAll(
+                listFilesInDirWithFilterInner(
+                    file,
+                    filter,
+                    true
+                )
+            )
         }
         return list
     }
@@ -422,19 +432,29 @@ object FileUtils {
         var child = 0
         var i = 0
         while (i < len) {
-            if ((raw[i].toInt() and 0xFF.toByte().toInt()) == 0xFF.toByte().toInt() || (raw[i].toInt() and 0xFE.toByte().toInt()) == 0xFE.toByte().toInt()) {
+            if ((raw[i].toInt() and 0xFF.toByte().toInt()) == 0xFF.toByte()
+                    .toInt() || (raw[i].toInt() and 0xFE.toByte().toInt()) == 0xFE.toByte().toInt()
+            ) {
                 return 0
             }
             if (child == 0) {
-                if ((raw[i].toInt() and 0x7F.toByte().toInt()) == raw[i].toInt() && raw[i].toInt() != 0) {
+                if ((raw[i].toInt() and 0x7F.toByte()
+                        .toInt()) == raw[i].toInt() && raw[i].toInt() != 0
+                ) {
                     i++
                 } else if ((raw[i].toInt() and 0xC0.toByte().toInt()) == 0xC0.toByte().toInt()) {
-                    child = (0 until 7).firstOrNull { ((0x80 shr it).toByte().toInt() and raw[i].toInt()) == (0x80 shr it).toByte().toInt() } ?: 0
+                    child = (0 until 7).firstOrNull {
+                        ((0x80 shr it).toByte()
+                            .toInt() and raw[i].toInt()) == (0x80 shr it).toByte()
+                            .toInt()
+                    } ?: 0
                     i++
                 }
             } else {
                 child = if (raw.size - i > child) child else (raw.size - i)
-                val currentNotUtf8 = (0 until child).any { (raw[i + it].toInt() and 0x80.toByte().toInt()) != 0x80.toByte().toInt() }
+                val currentNotUtf8 = (0 until child).any {
+                    (raw[i + it].toInt() and 0x80.toByte().toInt()) != 0x80.toByte().toInt()
+                }
                 if (currentNotUtf8) {
                     i++
                     child = 0
@@ -454,15 +474,15 @@ object FileUtils {
     }
 
     fun getLength(file: File?): Long {
-        return if (file == null) 0 else if (file.isDirectory) getDirLength(file) else getFileLength(file)
+        return if (file == null) 0 else if (file.isDirectory) getDirLength(file) else getFileLength(
+            file
+        )
     }
 
     private fun getDirLength(dir: File): Long {
         if (!isDir(dir)) return 0
         return dir.listFiles()?.sumOf { if (it.isDirectory) getDirLength(it) else it.length() } ?: 0
     }
-
-
 
 
     private fun getFileLength(file: File?): Long {
@@ -483,7 +503,8 @@ object FileUtils {
             val md = MessageDigest.getInstance("MD5")
             DigestInputStream(fis, md).use { dis ->
                 val buffer = ByteArray(1024 * 256)
-                while (dis.read(buffer) > 0) {}
+                while (dis.read(buffer) > 0) {
+                }
                 md.digest()
             }
         } catch (e: NoSuchAlgorithmException) {
@@ -519,31 +540,6 @@ object FileUtils {
 
     fun getFileName(file: File?): String {
         return file?.name ?: ""
-    }
-
-
-    /**
-     * 判断文件是否存在
-     * @param path 文件路径
-     * @return 文件是否存在
-     */
-    fun isFileExists(path: String): Boolean {
-        val file = File(path)
-        return file.exists()
-    }
-
-    /**
-     * 根据文件路径获取文件
-     * @param path 文件路径
-     * @return 文件对象，如果文件不存在则返回 null
-     */
-    fun getFileByPath(path: String): File? {
-        val file = File(path)
-        return if (file.exists()) {
-            file
-        } else {
-            null
-        }
     }
 
 
@@ -848,7 +844,10 @@ object FileUtils {
      *
      * @return 指向所需目录的 File 对象。
      */
-    fun getOrCreateStorageDirectory(directoryName: String, recreateIfExists: Boolean = false): File {
+    fun getOrCreateStorageDirectory(
+        directoryName: String,
+        recreateIfExists: Boolean = false,
+    ): File {
         // 尝试在应用的外部缓存目录中检索或创建目录
         val externalCacheDir = AppUtils.getApp().externalCacheDirs.firstOrNull()?.let {
             val directory = File(it, directoryName) // 目标目录
