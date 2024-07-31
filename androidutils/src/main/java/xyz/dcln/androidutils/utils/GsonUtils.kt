@@ -25,11 +25,18 @@ object GsonUtils {
         gson = customGson
     }
 
-    fun toJson(src: Any?): String? = gson.toJson(src)
+    fun toJson(src: Any?): String? {
+        return try {
+            gson.toJson(src)
+        } catch (e: Exception) {
+            logE("Failed to convert object to JSON", e)
+            null
+        }
+    }
 
-     inline fun <reified T> fromJson(json: String?): T? {
-        if (json == null) {
-            logE("Input json string is null")
+    inline fun <reified T> fromJson(json: String?): T? {
+        if (json.isNullOrEmpty()) {
+            logE("Input json string is null or empty")
             return null
         }
 
@@ -42,8 +49,8 @@ object GsonUtils {
     }
 
     fun <T> fromJson(json: String?, type: Type?): T? {
-        if (json == null || type == null) {
-            logE("Input json string or type is null")
+        if (json.isNullOrEmpty() || type == null) {
+            logE("Input json string is null or empty, or type is null")
             return null
         }
 
@@ -55,40 +62,75 @@ object GsonUtils {
         }
     }
 
-    fun getListType(type: Type?): Type {
-        if (type == null) {
-            throw IllegalArgumentException("Type parameter cannot be null")
+    fun getListType(type: Type?): Type? {
+        return try {
+            if (type == null) {
+                logE("Type parameter cannot be null")
+                return null
+            }
+            TypeToken.getParameterized(List::class.java, type).type
+        } catch (e: Exception) {
+            logE("Failed to get list type", e)
+            null
         }
-        return TypeToken.getParameterized(List::class.java, type).type
     }
 
-    fun getSetType(type: Type?): Type {
-        if (type == null) {
-            throw IllegalArgumentException("Type parameter cannot be null")
+    fun getSetType(type: Type?): Type? {
+        return try {
+            if (type == null) {
+                logE("Type parameter cannot be null")
+                return null
+            }
+            TypeToken.getParameterized(Set::class.java, type).type
+        } catch (e: Exception) {
+            logE("Failed to get set type", e)
+            null
         }
-        return TypeToken.getParameterized(Set::class.java, type).type
     }
 
-    fun getMapType(keyType: Type?, valueType: Type?): Type {
-        if (keyType == null || valueType == null) {
-            throw IllegalArgumentException("Key or Value Type parameters cannot be null")
+    fun getMapType(keyType: Type?, valueType: Type?): Type? {
+        return try {
+            if (keyType == null || valueType == null) {
+                logE("Key or Value Type parameters cannot be null")
+                return null
+            }
+            TypeToken.getParameterized(Map::class.java, keyType, valueType).type
+        } catch (e: Exception) {
+            logE("Failed to get map type", e)
+            null
         }
-        return TypeToken.getParameterized(Map::class.java, keyType, valueType).type
     }
 
-    fun getArrayType(type: Type?): Type {
-        if (type == null) {
-            throw IllegalArgumentException("Type parameter cannot be null")
+    fun getArrayType(type: Type?): Type? {
+        return try {
+            if (type == null) {
+                logE("Type parameter cannot be null")
+                return null
+            }
+            TypeToken.getArray(type).type
+        } catch (e: Exception) {
+            logE("Failed to get array type", e)
+            null
         }
-        return TypeToken.getArray(type).type
     }
 
-    fun getType(type: Class<*>?): Type {
-        if (type == null) {
-            throw IllegalArgumentException("Type parameter cannot be null")
+    fun getType(type: Class<*>?): Type? {
+        return try {
+            if (type == null) {
+                logE("Type parameter cannot be null")
+                return null
+            }
+            TypeToken.get(type).type
+        } catch (e: Exception) {
+            logE("Failed to get type", e)
+            null
         }
-        return TypeToken.get(type).type
     }
 
-
+    fun logE(message: String, e: Exception? = null) {
+        // Implement your logging mechanism here, for example:
+        println("$message ${e?.message}")
+        e?.printStackTrace()
+    }
 }
+
