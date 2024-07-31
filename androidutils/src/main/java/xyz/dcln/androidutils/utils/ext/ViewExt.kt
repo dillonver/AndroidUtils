@@ -16,6 +16,7 @@ import android.view.ViewOutlineProvider
 import android.view.animation.Animation
 import android.view.animation.Transformation
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 
 /**
  * 设置节流点击事件监听器
@@ -229,5 +230,22 @@ fun View.collapse(
         startAnimation(animation)
     } catch (e: Exception) {
         errorCallback?.invoke(e.message ?: "Exception: unknown")
+    }
+}
+
+/**
+ * 滚动 RecyclerView 到末尾位置。
+ * @param useSmoothScroll 是否使用平滑滚动。true 表示平滑滚动，false 表示直接滚动到位置。
+ */
+fun RecyclerView.scrollToEnd(useSmoothScroll: Boolean = false) {
+    this.adapter?.let { rv ->
+        val itemCount = rv.itemCount
+        if (itemCount > 0) {
+            if (useSmoothScroll) {
+                this.smoothScrollToPosition(itemCount - 1)
+            } else {
+                this.scrollToPosition(itemCount - 1)
+            }
+        }
     }
 }
