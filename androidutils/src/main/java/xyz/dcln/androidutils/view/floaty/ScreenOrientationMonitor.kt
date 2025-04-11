@@ -37,7 +37,6 @@ internal class ScreenOrientationMonitor(configuration: Configuration) : Componen
     }
 
     override fun onLowMemory() {
-        // default implementation ignored
     }
 
     /**
