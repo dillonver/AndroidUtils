@@ -584,14 +584,26 @@ object AppUtils {
      */
     fun getAppInfo(): String {
         val builder = StringBuilder()
-        builder.appendln("App name: ${getAppName()}")
-        builder.appendln("Package name: ${getAppPackageName()}")
-        builder.appendln("Version name: ${getAppVersionName()}")
-        builder.appendln("Version code: ${getAppVersionCode()}")
-        builder.appendln("Minimum SDK version: ${getAppMinSdkVersion()}")
-        builder.appendln("Target SDK version: ${getAppTargetSdkVersion()}")
-        builder.appendln("SHA1 signature: ${getAppSignaturesSHA1()}")
+        builder.appendLine("App name: ${getAppName()}")
+        builder.appendLine("Package name: ${getAppPackageName()}")
+        builder.appendLine("Version name: ${getAppVersionName()}")
+        builder.appendLine("Version code: ${getAppVersionCode()}")
+        builder.appendLine("Minimum SDK version: ${getAppMinSdkVersion()}")
+        builder.appendLine("Target SDK version: ${getAppTargetSdkVersion()}")
+        builder.appendLine("SHA1 signature: ${getAppSignaturesSHA1()}")
         return builder.toString()
+    }
+
+    fun getAppInfoAsMap(): Map<String, String> {
+        return mapOf(
+            "App name" to getAppName(),
+            "Package name" to getAppPackageName(),
+            "Version name" to getAppVersionName(),
+            "Version code" to getAppVersionCode().toString(),
+            "Minimum SDK version" to getAppMinSdkVersion().toString(),
+            "Target SDK version" to getAppTargetSdkVersion().toString(),
+            "SHA1 signature" to getAppSignaturesSHA1()
+        )
     }
 
     /**
