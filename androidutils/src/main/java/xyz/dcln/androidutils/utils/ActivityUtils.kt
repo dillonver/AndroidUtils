@@ -10,6 +10,7 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
+import android.view.Surface
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
@@ -400,7 +401,7 @@ object ActivityUtils {
                 val rotation = display?.rotation
                 requestedOrientation = when (rotation) {
                     // Portrait.
-                    0, 2 -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    Surface.ROTATION_0,  Surface.ROTATION_180 -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                     // Landscape.
                     else -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 }

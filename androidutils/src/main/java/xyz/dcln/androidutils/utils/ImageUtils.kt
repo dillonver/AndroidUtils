@@ -9,7 +9,6 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.Rect
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.media.MediaScannerConnection
 import android.net.Uri
@@ -19,6 +18,8 @@ import android.view.View
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.toDrawable
 import androidx.exifinterface.media.ExifInterface
 import java.io.BufferedOutputStream
 import java.io.File
@@ -36,7 +37,7 @@ object ImageUtils {
      * @return 转换后的 Drawable，如果输入的 Bitmap 为 null，则返回 null。
      */
     fun bitmap2Drawable(bitmap: Bitmap?): Drawable? {
-        return bitmap?.let { BitmapDrawable(AppUtils.getApp().resources, it) }
+        return bitmap?.toDrawable(AppUtils.getApp().resources)
     }
 
     /**
@@ -52,7 +53,7 @@ object ImageUtils {
             View.MeasureSpec.makeMeasureSpec(view.height, View.MeasureSpec.EXACTLY)
         )
         view.layout(view.left, view.top, view.right, view.bottom)
-        val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+        val bitmap = createBitmap(view.width, view.height)
         view.draw(Canvas(bitmap))
         return bitmap
     }
@@ -86,11 +87,7 @@ object ImageUtils {
      */
     fun getBitmap(@DrawableRes resId: Int): Bitmap? {
         val drawable = ContextCompat.getDrawable(AppUtils.getApp(), resId) ?: return null
-        val bitmap = Bitmap.createBitmap(
-            drawable.intrinsicWidth,
-            drawable.intrinsicHeight,
-            Bitmap.Config.ARGB_8888
-        )
+        val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
         Canvas(bitmap).apply {
             drawable.setBounds(0, 0, width, height)
             drawable.draw(this)
@@ -116,20 +113,7 @@ object ImageUtils {
         return BitmapFactory.decodeResource(AppUtils.getApp().resources, resId, options)
     }
 
-    /**
-     * 给 Bitmap 添加颜色滤镜。
-     *
-     * @param src 待处理的源 Bitmap。
-     * @param color 颜色滤镜。
-     * @param recycle 是否在处理后回收源 Bitmap，默认为 false。
-     * @return 添加颜色滤镜后的 Bitmap，如果源 Bitmap 为空或已回收，则返回 null。
-     */
-    fun drawColor(src: Bitmap, @ColorInt color: Int, recycle: Boolean = false): Bitmap? {
-        if (isEmptyBitmap(src)) return null
-        val ret = if (recycle) src else src.copy(src.config, true)
-        Canvas(ret).drawColor(color, PorterDuff.Mode.DARKEN)
-        return ret
-    }
+
 
     /**
      * 旋转 Bitmap。
@@ -327,6 +311,7 @@ object ImageUtils {
         }
     }
 
+
     /**
      * 为给定的 Bitmap 添加图片水印。
      *
@@ -349,7 +334,9 @@ object ImageUtils {
         if (src == null || src.isRecycled) return null
         if (watermark == null || watermark.isRecycled) return src
 
-        val result = src.copy(src.config, true)
+        // 如果 config 为 null，使用默认的 ARGB_8888 配置
+        val config = src.config ?: Bitmap.Config.ARGB_8888
+        val result = src.copy(config, true)
 
         Canvas(result).apply {
             drawBitmap(watermark, x.toFloat(), y.toFloat(), Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -385,14 +372,18 @@ object ImageUtils {
     ): Bitmap? {
         if (src == null || src.isRecycled || content.isNullOrEmpty()) return null
 
-        val result = src.copy(src.config, true)
+        // 如果 config 为 null，使用默认的 ARGB_8888 配置
+        val config = src.config ?: Bitmap.Config.ARGB_8888
+        val result = src.copy(config, true)
 
         Canvas(result).apply {
             Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 this.color = color
                 this.textSize = textSize
-                getTextBounds(content, 0, content.length, Rect())
-                drawText(content, x, y + textSize, this)
+                val textBounds = Rect()
+                getTextBounds(content, 0, content.length, textBounds)
+                // 调整 y 坐标以确保文字正确定位
+                drawText(content, x, y - textBounds.top, this)
             }
         }
 
@@ -402,13 +393,38 @@ object ImageUtils {
     }
 
     /**
+     * 给 Bitmap 添加颜色滤镜。
+     *
+     * @param src 待处理的源 Bitmap。
+     * @param color 颜色滤镜。
+     * @param recycle 是否在处理后回收源 Bitmap，默认为 false。
+     * @return 添加颜色滤镜后的 Bitmap，如果源 Bitmap 为空或已回收，则返回 null。
+     */
+    fun drawColor(src: Bitmap?, @ColorInt color: Int, recycle: Boolean = false): Bitmap? {
+        if (isEmptyBitmap(src)) return null
+
+        // 如果 config 为 null，使用默认的 ARGB_8888 配置
+        val config = src?.config ?: Bitmap.Config.ARGB_8888
+        val ret = if (recycle) {
+            src ?: return null // 确保 src 非空
+        } else {
+            src?.copy(config, true) ?: return null // 复制时确保非空
+        }
+
+        // 此时 ret 保证非空，可以安全使用
+        Canvas(ret).drawColor(color, PorterDuff.Mode.DARKEN)
+        return ret
+    }
+
+
+    /**
      * 判断 Bitmap 是否为空（null 或宽高为 0）。
      *
-     * @param src 待判断的 Bitmap。
+     * @param bitmap 待判断的 Bitmap。
      * @return true 表示 Bitmap 为空，false 表示 Bitmap 不为空。
      */
-    private fun isEmptyBitmap(src: Bitmap?): Boolean {
-        return src == null || src.width == 0 || src.height == 0
+    private fun isEmptyBitmap(bitmap: Bitmap?): Boolean {
+        return bitmap == null || bitmap.width == 0 || bitmap.height == 0|| bitmap.isRecycled
     }
 
     /**

@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import androidx.core.graphics.createBitmap
 
 /**
  * 将 [Drawable] 转换为 [Bitmap]
@@ -16,11 +17,7 @@ fun Drawable.toBitmap(): Bitmap? {
     }
 
     // 创建一个空的 Bitmap，大小与 Drawable 相同
-    val bitmap = Bitmap.createBitmap(
-        this.intrinsicWidth,
-        this.intrinsicHeight,
-        Bitmap.Config.ARGB_8888
-    )
+    val bitmap = createBitmap(this.intrinsicWidth, this.intrinsicHeight)
 
     // 将 Drawable 绘制在 Canvas 上，然后将 Canvas 绘制到 Bitmap 上
     val canvas = Canvas(bitmap)
