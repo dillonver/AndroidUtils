@@ -1,6 +1,7 @@
 package xyz.dcln.androidutils.utils
 
 
+import android.annotation.SuppressLint
 import java.io.File
 import java.security.KeyFactory
 import java.security.MessageDigest
@@ -12,6 +13,8 @@ import javax.crypto.spec.DESKeySpec
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import android.util.Base64
+import android.util.Log
+import java.nio.charset.StandardCharsets
 import java.security.spec.PKCS8EncodedKeySpec
 
 /**
@@ -430,4 +433,123 @@ object EncryptUtils {
         }
         return result
     }
+
+
+
+
+    /**
+     * AES 加密
+     *
+     * @param data      待加密内容
+     * @param secretKey 加密密码，长度：16 或 32 个字符
+     * @return 返回Base64转码后的加密数据
+     */
+    @SuppressLint("GetInstance")
+    fun simpleAesEncrypt(data: String, secretKey: String): String? {
+        try {
+            //创建密码器
+            val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+            //初始化为加密密码器
+            cipher.init(Cipher.ENCRYPT_MODE, getSecretKey(secretKey))
+            val encryptByte = cipher.doFinal(data.toByteArray(StandardCharsets.UTF_8))
+            // 将加密以后的数据进行 Base64 编码
+            return base64Encode(encryptByte)
+        } catch (e: Exception) {
+            handleException(e)
+        }
+        return null
+    }
+
+
+    /**
+     * AES 解密
+     *
+     * @param base64Data 加密的密文 Base64 字符串
+     * @param secretKey  解密的密钥，长度：16 或 32 个字符
+     */
+    @SuppressLint("GetInstance")
+    fun simpleAesDecrypt(base64Data: String?, secretKey: String): String? {
+        try {
+            if (base64Data.isNullOrBlank()) return null
+            val data = base64Decode(base64Data)
+            val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+            //设置为解密模式
+            cipher.init(Cipher.DECRYPT_MODE, getSecretKey(secretKey))
+            //执行解密操作
+            val result = cipher.doFinal(data)
+            return String(result, StandardCharsets.UTF_8)
+        } catch (e: Exception) {
+            handleException(e)
+        }
+        return null
+    }
+
+    /**
+     * 使用密码获取 AES 秘钥
+     */
+    private fun getSecretKey(secretKey: String): SecretKeySpec {
+        val secretKeyNew = toMakeKey(secretKey, 32,  "0")
+        return SecretKeySpec(secretKeyNew.toByteArray(StandardCharsets.UTF_8), "AES")
+    }
+
+    /**
+     * 如果 AES 的密钥小于 `length` 的长度，就对秘钥进行补位，保证秘钥安全。
+     *
+     * @param secretKey 密钥 key
+     * @param length    密钥应有的长度
+     * @param text      默认补的文本
+     * @return 密钥
+     */
+    private fun toMakeKey(secretKey: String, length: Int = 32, text: String = "0"): String {
+        // 获取密钥长度
+        val strLen = secretKey.length
+        // 判断长度是否小于应有的长度
+        if (strLen > length) {
+            LogUtils.e("ERR KEY")
+            return ""
+        }
+        if (strLen == length) {
+            return secretKey
+        }
+        // 补全位数
+        val builder = StringBuilder()
+        // 将key添加至builder中
+        builder.append(secretKey)
+        // 遍历添加默认文本
+        for (i in 0 until length - strLen) {
+            builder.append(text)
+        }
+        // 赋值
+        return builder.toString()
+
+    }
+
+    /**
+     * 将 Base64 字符串 解码成 字节数组
+     */
+    private fun base64Decode(data: String?): ByteArray {
+        return Base64.decode(data, Base64.NO_WRAP)
+    }
+
+    fun base64DecodeToString(encodedString: String?): String? {
+        if (encodedString.isNullOrBlank()) return null
+        // 将字节数组转换为字符串
+        return String(base64Decode(encodedString), Charsets.UTF_8)
+    }
+
+
+    /**
+     * 将 字节数组 转换成 Base64 编码
+     */
+    private fun base64Encode(data: ByteArray?): String {
+        return Base64.encodeToString(data, Base64.NO_WRAP)
+    }
+
+    /**
+     * 处理异常
+     */
+    private fun handleException(e: Exception) {
+        e.printStackTrace()
+    }
+
 }

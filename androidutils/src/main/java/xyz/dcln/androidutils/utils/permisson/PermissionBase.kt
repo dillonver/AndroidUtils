@@ -15,8 +15,8 @@ import xyz.dcln.androidutils.utils.ActivityUtils.isOrientationLocked
 import xyz.dcln.androidutils.utils.ActivityUtils.toggleOrientationLock
 import xyz.dcln.androidutils.utils.AppUtils
 import xyz.dcln.androidutils.utils.AppUtils.isAppForeground
-import xyz.dcln.androidutils.utils.IntervalUtils.interval
 import xyz.dcln.androidutils.utils.LogUtils.logW
+import xyz.dcln.androidutils.utils.TimerUtils.startTimer
 import java.util.concurrent.TimeUnit
 
 
@@ -279,11 +279,11 @@ object PermissionBase {
             logW("autoReturnSeconds must be >= 30")
             return
         }
-        activity.interval(
-            end = 0,
-            period = 1,
-            unit = TimeUnit.SECONDS,
-            start = autoReturnSeconds,
+        activity.startTimer(
+            targetValue = 0,
+            interval = 1,
+            timeUnit = TimeUnit.SECONDS,
+            initialValue = autoReturnSeconds,
             onTick = { controller, count ->
                 if (permissionCheck()) {
                     if (!isAppForeground()) {
@@ -302,7 +302,7 @@ object PermissionBase {
                     }
                 }
             },
-            onFinish = {
+            onComplete = {
                 if (!isAppForeground()) {
                     ActivityUtils.startActivity(
                         activity,
