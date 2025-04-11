@@ -36,6 +36,7 @@ internal class ScreenOrientationMonitor(configuration: Configuration) : Componen
         mCallback?.onScreenOrientationChange(mScreenOrientation)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onLowMemory() {
     }
 
